@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemerské poklady na tanieri</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat:wght@700&display=swap" rel="stylesheet">
+    <style>
+        /* Celkový štýl stránky */
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(45deg, #4A90E2, #81D4FA, #0288D1, #01579B);
+            background-size: 400% 400%;
+            animation: gradientAnimation 15s ease infinite;
+            font-family: 'Roboto', sans-serif;
+            overflow: hidden;
+            position: relative;
+        }
+
+        h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 48px;
+            color: white;
+            text-shadow: 6px 6px 15px rgba(0, 0, 0, 0.8);
+            margin: 20px 0;
+            text-align: center;
+            text-transform: uppercase;
+            font-weight: bold;
+            letter-spacing: 2px;
+            background: linear-gradient(to left, #0288D1, #01579B);
+            -webkit-background-clip: text;
+            color: transparent;
+            padding: 10px 0;
+            border-bottom: 3px solid #0288D1;
+            animation: slideIn 1s ease-out;
+        }
+
+        h2 {
+            font-size: 24px;
+            color: #ffffff;
+            text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.7);
+            margin: 5px 0 20px;
+            text-align: center;
+            opacity: 0;
+            animation: fadeIn 2s 1s forwards;
+        }
+
+        /* Animácia pre pozadie */
+        @keyframes gradientAnimation {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        /* Animácie pre popup */
+        @keyframes popupEnter {
+            0% {
+                transform: translate(-50%, -50%) scale(0.8);
+                opacity: 0;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes popupExit {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(0.8);
+                opacity: 0;
+            }
+        }
+
+        /* Popup štýl */
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #ffffff;
+            border-radius: 15px;
+            width: 80%;
+            max-width: 600px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+            z-index: 9999;
+            transition: all 0.5s ease-in-out;
+            animation: popupEnter 0.5s forwards;
+        }
+
+        .popup-slide {
+            display: none;
+        }
+
+        .popup-slide.active {
+            display: block;
+        }
+
+        .popup-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #0288D1;
+            text-align: center;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.4);
+            border-bottom: 3px solid #0288D1;
+            padding-bottom: 10px;
+            animation: fadeIn 1s ease-out;
+        }
+
+        .popup-button {
+            display: inline-block;
+            padding: 12px 24px;
+            margin: 10px 0;
+            background-color: #0288D1;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            text-transform: uppercase;
+            border-radius: 30px;
+            text-decoration: none;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            border: none;
+            animation: buttonHover 0.5s ease-in-out;
+        }
+
+        .popup-button:hover {
+            background-color: #01579B;
+            transform: scale(1.05);
+        }
+
+        .popup-button:active {
+            transform: scale(0.98);
+        }
+
+        .popup-button-close {
+            background-color: #D32F2F;
+        }
+
+        .popup-button-close:hover {
+            background-color: #B71C1C;
+        }
+
+        /* Efekt na tlačidlách */
+        @keyframes buttonHover {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .star-rating {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+        }
+
+        .star {
+            font-size: 30px;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .star.selected {
+            color: gold;
+        }
+
+        .star:hover {
+            color: gold;
+        }
+
+        /* Animácia pre body na mape */
+        .location {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: #0288D1;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s;
+            animation: pulse 2s infinite ease-in-out;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.3);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .location:hover {
+            transform: scale(1.3);
+        }
+
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideIn {
+            0% {
+                transform: translateX(-100%);
+            }
+            100% {
+                transform: translateX(0);
+            }
+        }
+
+        /* Map container */
+        .map-container {
+    position: relative;
+    width: 80%;
+    height: 60vh;
+    background-image: url('65C37087-C4B6-4EF5-AE1C-A30CA2BAD807.jpeg'); /* Skontrolujte, či je obrázok v správnej ceste */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    border: 4px solid #01579B;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+
+    </style>
+</head>
+<body>
+    <h1>Gemerské poklady na tanieri</h1>
+    <h2>SOČ práca Martina Baloga, Miriam Benkovej</h2>
+
+    <div class="map-container">
+        <div class="location" data-name="Rožňava" data-slides='["Rožňava je mesto bohaté na históriu.", "Rožňava ponúka krásne historické pamiatky."]' style="top: 20%; left: 50%;"></div>
+        <div class="location" data-name="Revúca" data-slides='["Revúca je známa svojou prírodou.", "Revúca ponúka turistické chodníky."]' style="top: 30%; left: 50%;"></div>
+        <div class="location" data-name="Gemerská Poloma" data-slides='["Gemerská Poloma je pokojné miesto na oddych.", "Gemerská Poloma je obklopená prírodou."]' style="top: 40%; left: 20%;"></div>
+        <div class="location" data-name="Plešivec" data-slides='["Plešivec je dedinka s krásnymi výhľadmi.", "Plešivec je ideálny pre oddych."]' style="top: 50%; left: 40%;"></div>
+    </div>
+
+    <div class="popup" id="popup">
+        <div class="popup-slide" id="slide-1">
+            <h3 class="popup-title"></h3>
+            <p></p>
+        </div>
+        <div class="popup-slide" id="slide-2">
+            <h3 class="popup-title"></h3>
+            <p></p>
+        </div>
+        <div class="popup-slide" id="slide-3">
+            <h3 class="popup-title">Recenzia</h3>
+            <form>
+                <div class="star-rating">
+                    <span class="star" data-rating="1">★</span>
+                    <span class="star" data-rating="2">★</span>
+                    <span class="star" data-rating="3">★</span>
+                    <span class="star" data-rating="4">★</span>
+                    <span class="star" data-rating="5">★</span>
+                </div>
+                <button type="submit" class="popup-button">Odoslať</button>
+            </form>
+        </div>
+        <button class="popup-button" id="next-slide">Ďalšie informácie</button>
+        <button class="popup-button popup-button-close" id="close-popup">Zavrieť</button>
+    </div>
+
+    <script>
+        const locations = document.querySelectorAll('.location');
+        const popup = document.getElementById('popup');
+        const nextSlideButton = document.getElementById('next-slide');
+        const closePopupButton = document.getElementById('close-popup');
+        let currentSlide = 0;
+
+        locations.forEach(location => {
+            location.addEventListener('click', () => {
+                const locationName = location.getAttribute('data-name');
+                const slideInfo = JSON.parse(location.getAttribute('data-slides'));
+                document.getElementById('slide-1').innerHTML = `<h3 class="popup-title">${locationName}</h3><p>${slideInfo[0]}</p>`;
+                document.getElementById('slide-2').innerHTML = `<h3 class="popup-title">${locationName}</h3><p>${slideInfo[1]}</p>`;
+                
+                currentSlide = 0;
+                popup.style.display = 'block';
+                updateSlides();
+            });
+        });
+
+        nextSlideButton.addEventListener('click', () => {
+            if (currentSlide < 2) {
+                currentSlide++;
+                updateSlides();
+            }
+        });
+
+        closePopupButton.addEventListener('click', () => {
+            popup.style.display = 'none';
+        });
+
+        function updateSlides() {
+            const slides = document.querySelectorAll('.popup-slide');
+            slides.forEach((slide, index) => {
+                slide.classList.toggle('active', index === currentSlide);
+            });
+        }
+
+        document.querySelectorAll('.star').forEach(star => {
+            star.addEventListener('click', () => {
+                const rating = star.getAttribute('data-rating');
+                document.querySelectorAll('.star').forEach(s => {
+                    s.classList.toggle('selected', s.getAttribute('data-rating') <= rating);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+pokus č.84
