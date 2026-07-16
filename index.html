@@ -3,22 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Prekvapenie 🫶</title>
+<title>Obed</title>
 
 <style>
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:Arial,sans-serif;
-}
-
 body{
-    background:linear-gradient(135deg,#ff9ec4,#ffd6e8);
+    margin:0;
+    height:100vh;
     display:flex;
     justify-content:center;
     align-items:center;
-    height:100vh;
+    background:linear-gradient(135deg,#ff9ec4,#ffe0ed);
+    font-family:Arial,sans-serif;
     overflow:hidden;
 }
 
@@ -26,50 +21,18 @@ body{
     text-align:center;
 }
 
-#start{
-    padding:18px 40px;
-    font-size:24px;
-    border:none;
-    border-radius:15px;
-    background:#ff2d75;
-    color:white;
-    cursor:pointer;
-    transition:.3s;
-    box-shadow:0 8px 20px rgba(0,0,0,.2);
-}
-
-#start:hover{
-    transform:scale(1.1);
-}
-
-#content{
-    display:none;
-}
-
-h1{
-    font-size:55px;
-    color:white;
-    text-shadow:2px 2px 10px rgba(0,0,0,.3);
-    animation:pop 1s;
-}
-
-p{
-    margin-top:30px;
-    color:white;
-    font-size:22px;
-}
-
-.buttons{
-    margin-top:20px;
-}
-
-.buttons button{
-    padding:12px 28px;
-    font-size:20px;
+button{
+    padding:14px 30px;
+    margin:10px;
     border:none;
     border-radius:12px;
+    font-size:20px;
     cursor:pointer;
-    margin:10px;
+}
+
+#start{
+    background:#ff2d75;
+    color:white;
 }
 
 #yes{
@@ -80,128 +43,208 @@ p{
 #no{
     background:#dc3545;
     color:white;
-    position:absolute;
+}
+
+#main,#time,#places{
+    display:none;
+}
+
+h1{
+    color:white;
+    font-size:50px;
+    text-shadow:2px 2px 8px #555;
+}
+
+p{
+    color:white;
+    font-size:22px;
+}
+
+input{
+    padding:12px;
+    font-size:20px;
+    border-radius:10px;
+    border:none;
 }
 
 .hand{
     position:absolute;
     font-size:35px;
-    animation:fly 3s linear forwards;
+    animation:fly 3s forwards;
     pointer-events:none;
-}
-
-@keyframes pop{
-    from{
-        transform:scale(0);
-        opacity:0;
-    }
-    to{
-        transform:scale(1);
-        opacity:1;
-    }
 }
 
 @keyframes fly{
     from{
-        transform:translateY(0) scale(1);
+        transform:translateY(0);
         opacity:1;
     }
     to{
-        transform:translateY(-120vh) scale(2);
+        transform:translateY(-120vh);
         opacity:0;
     }
+}
+
+#error{
+    display:none;
+    position:absolute;
+    background:#111;
+    color:#00ff00;
+    padding:30px;
+    border-radius:10px;
+    font-family:monospace;
+    font-size:18px;
 }
 </style>
 
 </head>
+
 <body>
 
 <div class="container">
 
-<button id="start">Stlač 🫶</button>
+<button id="start">Stlač</button>
 
-<div id="content">
 
-<h1>
-🫶<br>
-Si frajerka!<br>
-Gratulujem,<br>
-zaslúžene si frajerka!
-</h1>
+<div id="main">
 
-<p>Dnes vyqapkuj ma post</p>
+<h1>Dnes obed?</h1>
 
-<div class="buttons">
 <button id="yes">Áno</button>
 <button id="no">Nie</button>
-</div>
 
 </div>
 
+
+<div id="time">
+
+<h1>Vyber čas</h1>
+
+<p>Kedy ideme na obed?</p>
+
+<input type="time" id="clock">
+
+<br>
+
+<button onclick="confirmTime()">Potvrdiť</button>
+
 </div>
+
+
+<div id="places">
+
+<h1>Vyber miesto</h1>
+
+<p>Čo chceš?</p>
+
+<button onclick="choose('Castelo')">Castelo</button>
+<button onclick="choose('Vietown')">Vietown</button>
+<button onclick="choose('Micio')">Micio</button>
+
+</div>
+
+
+</div>
+
+
+<div id="error">
+ERROR 404<br><br>
+Toto rozhodnutie nie je podporované.<br>
+Skús znova.
+</div>
+
 
 <script>
 
 const start=document.getElementById("start");
-const content=document.getElementById("content");
-const no=document.getElementById("no");
-const yes=document.getElementById("yes");
+const main=document.getElementById("main");
+const time=document.getElementById("time");
+const places=document.getElementById("places");
+const error=document.getElementById("error");
 
-function hands(count){
 
-    for(let i=0;i<count;i++){
+function hands(){
 
-        setTimeout(()=>{
+for(let i=0;i<80;i++){
 
-            const hand=document.createElement("div");
-            hand.className="hand";
-            hand.innerHTML="🫶";
-            hand.style.left=Math.random()*100+"vw";
-            hand.style.top="100vh";
-            hand.style.fontSize=(25+Math.random()*30)+"px";
+setTimeout(()=>{
 
-            document.body.appendChild(hand);
+let h=document.createElement("div");
+h.className="hand";
+h.innerHTML="🫶";
+h.style.left=Math.random()*100+"vw";
+h.style.top="100vh";
 
-            setTimeout(()=>{
-                hand.remove();
-            },3000);
+document.body.appendChild(h);
 
-        },i*30);
+setTimeout(()=>{
+h.remove();
+},3000);
 
-    }
+},i*40);
 
 }
+
+}
+
 
 start.onclick=()=>{
 
-    start.style.display="none";
-    content.style.display="block";
-
-    hands(100);
-
-    no.style.left=(window.innerWidth/2+100)+"px";
-    no.style.top=(window.innerHeight/2+170)+"px";
+start.style.display="none";
+main.style.display="block";
 
 };
 
-function moveNo(){
 
-    const x=Math.random()*(window.innerWidth-120);
-    const y=Math.random()*(window.innerHeight-80);
+document.getElementById("yes").onclick=()=>{
 
-    no.style.left=x+"px";
-    no.style.top=y+"px";
+main.style.display="none";
+time.style.display="block";
+
+};
+
+
+document.getElementById("no").onclick=()=>{
+
+error.style.display="block";
+
+setTimeout(()=>{
+
+error.style.display="none";
+
+},3500);
+
+};
+
+
+function confirmTime(){
+
+let selected=document.getElementById("clock").value;
+
+if(selected==""){
+alert("Vyber čas");
+return;
+}
+
+time.style.display="none";
+places.style.display="block";
 
 }
 
-no.addEventListener("mouseenter",moveNo);
-no.addEventListener("click",moveNo);
 
-yes.onclick=()=>{
+function choose(place){
 
-    hands(180);
+let cas=document.getElementById("clock").value;
 
-};
+alert(
+"Dohodnuté\n\n"+
+"Čas: "+cas+
+"\nMiesto: "+place
+);
+
+hands();
+
+}
 
 </script>
 
