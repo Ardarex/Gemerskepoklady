@@ -1,252 +1,96 @@
 <!DOCTYPE html>
 <html lang="sk">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Obed</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Naše sociálne siete</title>
 
-<style>
-body{
-    margin:0;
-    height:100vh;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    background:linear-gradient(135deg,#ff9ec4,#ffe0ed);
-    font-family:Arial,sans-serif;
-    overflow:hidden;
-}
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
-.container{
-    text-align:center;
-}
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
 
-button{
-    padding:14px 30px;
-    margin:10px;
-    border:none;
-    border-radius:12px;
-    font-size:20px;
-    cursor:pointer;
-}
+        .social-box {
+            background: #fff;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+            text-align: center;
+            min-width: 320px;
+        }
 
-#start{
-    background:#ff2d75;
-    color:white;
-}
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
 
-#yes{
-    background:#28a745;
-    color:white;
-}
+        .social-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-decoration: none;
+            color: white;
+            padding: 14px;
+            border-radius: 30px;
+            font-size: 18px;
+            margin: 12px 0;
+            transition: 0.3s;
+        }
 
-#no{
-    background:#dc3545;
-    color:white;
-}
+        .social-link:hover {
+            transform: scale(1.05);
+        }
 
-#main,#time,#places{
-    display:none;
-}
+        .instagram {
+            background: #E1306C;
+        }
 
-h1{
-    color:white;
-    font-size:50px;
-    text-shadow:2px 2px 8px #555;
-}
+        .instagram:hover {
+            background: #C13584;
+        }
 
-p{
-    color:white;
-    font-size:22px;
-}
+        .facebook {
+            background: #1877F2;
+        }
 
-input{
-    padding:12px;
-    font-size:20px;
-    border-radius:10px;
-    border:none;
-}
+        .facebook:hover {
+            background: #166FE5;
+        }
 
-.hand{
-    position:absolute;
-    font-size:35px;
-    animation:fly 3s forwards;
-    pointer-events:none;
-}
-
-@keyframes fly{
-    from{
-        transform:translateY(0);
-        opacity:1;
-    }
-    to{
-        transform:translateY(-120vh);
-        opacity:0;
-    }
-}
-
-#error{
-    display:none;
-    position:absolute;
-    background:#111;
-    color:#00ff00;
-    padding:30px;
-    border-radius:10px;
-    font-family:monospace;
-    font-size:18px;
-}
-</style>
-
+        .social-link i {
+            font-size: 24px;
+        }
+    </style>
 </head>
-
 <body>
 
-<div class="container">
+<div class="social-box">
+    <h1>Naše sociálne siete</h1>
 
-<button id="start">Stlač</button>
+    <a class="social-link instagram"
+       href="https://www.instagram.com/gff_rejdova/"
+       target="_blank">
+        <i class="fab fa-instagram"></i>
+        Instagram
+    </a>
 
-
-<div id="main">
-
-<h1>Dnes obed?</h1>
-
-<button id="yes">Áno</button>
-<button id="no">Nie</button>
-
+    <a class="social-link facebook"
+       href="https://www.facebook.com/GFFRejdova"
+       target="_blank">
+        <i class="fab fa-facebook-f"></i>
+        Facebook
+    </a>
 </div>
-
-
-<div id="time">
-
-<h1>Vyber čas</h1>
-
-<p>Kedy ideme na obed?</p>
-
-<input type="time" id="clock">
-
-<br>
-
-<button onclick="confirmTime()">Potvrdiť</button>
-
-</div>
-
-
-<div id="places">
-
-<h1>Vyber miesto</h1>
-
-<p>Čo chceš?</p>
-
-<button onclick="choose('Castelo')">Castelo</button>
-<button onclick="choose('Vietown')">Vietown</button>
-<button onclick="choose('Micio')">Micio</button>
-
-</div>
-
-
-</div>
-
-
-<div id="error">
-ERROR 404<br><br>
-Toto rozhodnutie nie je podporované.<br>
-Skús znova.
-</div>
-
-
-<script>
-
-const start=document.getElementById("start");
-const main=document.getElementById("main");
-const time=document.getElementById("time");
-const places=document.getElementById("places");
-const error=document.getElementById("error");
-
-
-function hands(){
-
-for(let i=0;i<80;i++){
-
-setTimeout(()=>{
-
-let h=document.createElement("div");
-h.className="hand";
-h.innerHTML="🫶";
-h.style.left=Math.random()*100+"vw";
-h.style.top="100vh";
-
-document.body.appendChild(h);
-
-setTimeout(()=>{
-h.remove();
-},3000);
-
-},i*40);
-
-}
-
-}
-
-
-start.onclick=()=>{
-
-start.style.display="none";
-main.style.display="block";
-
-};
-
-
-document.getElementById("yes").onclick=()=>{
-
-main.style.display="none";
-time.style.display="block";
-
-};
-
-
-document.getElementById("no").onclick=()=>{
-
-error.style.display="block";
-
-setTimeout(()=>{
-
-error.style.display="none";
-
-},3500);
-
-};
-
-
-function confirmTime(){
-
-let selected=document.getElementById("clock").value;
-
-if(selected==""){
-alert("Vyber čas");
-return;
-}
-
-time.style.display="none";
-places.style.display="block";
-
-}
-
-
-function choose(place){
-
-let cas=document.getElementById("clock").value;
-
-alert(
-"Dohodnuté\n\n"+
-"Čas: "+cas+
-"\nMiesto: "+place
-);
-
-hands();
-
-}
-
-</script>
 
 </body>
 </html>
