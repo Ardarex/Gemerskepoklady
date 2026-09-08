@@ -1,0 +1,434 @@
+<!doctype html>
+
+<html lang="sk">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Administrácia rezervácií</title>
+
+  <link
+    rel="stylesheet"
+    href="/style.css"
+  >
+
+</head>
+
+<body>
+
+<header>
+
+  <div class="header-inner">
+
+    <div class="logo">
+      ADMINISTRÁCIA
+    </div>
+
+    <div>
+      Rezervácie
+    </div>
+
+  </div>
+
+</header>
+
+
+<main class="admin">
+
+  <div class="admin-top">
+
+    <div>
+
+      <div class="badge">
+        ADMIN
+      </div>
+
+      <h1>
+        Rezervácie
+      </h1>
+
+    </div>
+
+    <button
+      onclick="loadReservations()"
+      class="refresh"
+    >
+      Obnoviť
+    </button>
+
+  </div>
+
+
+  <div
+    id="login"
+    class="card"
+  >
+
+    <h2>
+      Prihlásenie
+    </h2>
+
+    <p>
+      Zadaj admin token.
+    </p>
+
+    <input
+      type="password"
+      id="token"
+      placeholder="Admin token"
+    >
+
+    <button onclick="login()">
+      Prihlásiť
+    </button>
+
+    <p
+      id="login-error"
+      class="error"
+    ></p>
+
+  </div>
+
+
+  <div
+    id="dashboard"
+    style="display:none"
+  >
+
+    <div
+      class="stats"
+      id="stats"
+    ></div>
+
+
+    <div class="table-wrapper">
+
+      <table>
+
+        <thead>
+
+          <tr>
+
+            <th>#</th>
+            <th>Meno</th>
+            <th>E-mail</th>
+            <th>Telefón</th>
+            <th>Termín</th>
+            <th>Stav</th>
+            <th>Akcia</th>
+
+          </tr>
+
+        </thead>
+
+        <tbody
+          id="reservations"
+        ></tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+</main>
+
+
+<script>
+
+let adminToken =
+  localStorage.getItem(
+    "adminToken"
+  );
+
+
+function login() {
+
+  const token =
+    document.getElementById(
+      "token"
+    ).value.trim();
+
+
+  if (!token) {
+    return;
+  }
+
+
+  adminToken = token;
+
+  localStorage.setItem(
+    "adminToken",
+    token
+  );
+
+
+  loadReservations();
+
+}
+
+
+async function loadReservations() {
+
+  if (!adminToken) {
+
+    document.getElementById(
+      "login"
+    ).style.display = "block";
+
+    document.getElementById(
+      "dashboard"
+    ).style.display = "none";
+
+    return;
+  }
+
+
+  const response =
+    await fetch(
+      "/api/admin/reservations",
+      {
+        headers: {
+          Authorization:
+            `Bearer ${adminToken}`
+        }
+      }
+    );
+
+
+  if (response.status === 401) {
+
+    localStorage.removeItem(
+      "adminToken"
+    );
+
+    adminToken = null;
+
+    document.getElementById(
+      "login-error"
+    ).textContent =
+      "Nesprávny token.";
+
+    return;
+  }
+
+
+  const reservations =
+    await response.json();
+
+
+  document.getElementById(
+    "login"
+  ).style.display = "none";
+
+
+  document.getElementById(
+    "dashboard"
+  ).style.display = "block";
+
+
+  renderStats(
+    reservations
+  );
+
+  renderReservations(
+    reservations
+  );
+
+}
+
+
+function renderStats(
+  reservations
+) {
+
+  const paid =
+    reservations.filter(
+      r => r.status === "paid"
+    ).length;
+
+
+  const pending =
+    reservations.filter(
+      r => r.status === "pending"
+    ).length;
+
+
+  document.getElementById(
+    "stats"
+  ).innerHTML = `
+
+    <div class="stat">
+      <strong>
+        ${reservations.length}
+      </strong>
+
+      <span>
+        Všetky rezervácie
+      </span>
+    </div>
+
+    <div class="stat">
+      <strong>
+        ${paid}
+      </strong>
+
+      <span>
+        Zaplatené
+      </span>
+    </div>
+
+    <div class="stat">
+      <strong>
+        ${pending}
+      </strong>
+
+      <span>
+        Čaká na platbu
+      </span>
+    </div>
+
+  `;
+
+}
+
+
+function renderReservations(
+  reservations
+) {
+
+  const tbody =
+    document.getElementById(
+      "reservations"
+    );
+
+
+  if (!reservations.length) {
+
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="7">
+          Zatiaľ nemáš žiadne rezervácie.
+        </td>
+      </tr>
+    `;
+
+    return;
+  }
+
+
+  tbody.innerHTML =
+    reservations.map(
+      r => `
+
+      <tr>
+
+        <td>
+          #${r.id}
+        </td>
+
+        <td>
+          <strong>
+            ${escapeHtml(r.name)}
+          </strong>
+        </td>
+
+        <td>
+          ${escapeHtml(r.email)}
+        </td>
+
+        <td>
+          ${escapeHtml(r.phone || "-")}
+        </td>
+
+        <td>
+          ${escapeHtml(r.date)}
+        </td>
+
+        <td>
+
+          <span
+            class="status ${r.status}"
+          >
+            ${
+              r.status === "paid"
+                ? "Zaplatené"
+                : "Čaká"
+            }
+          </span>
+
+        </td>
+
+        <td>
+
+          <button
+            class="delete"
+            onclick="deleteReservation(${r.id})"
+          >
+            Zmazať
+          </button>
+
+        </td>
+
+      </tr>
+
+      `
+    ).join("");
+
+}
+
+
+async function deleteReservation(id) {
+
+  if (
+    !confirm(
+      "Naozaj chceš zmazať túto rezerváciu?"
+    )
+  ) {
+    return;
+  }
+
+
+  await fetch(
+    `/api/admin/reservations/${id}`,
+    {
+      method: "DELETE",
+
+      headers: {
+        Authorization:
+          `Bearer ${adminToken}`
+      }
+    }
+  );
+
+
+  loadReservations();
+
+}
+
+
+function escapeHtml(value) {
+
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+
+}
+
+
+loadReservations();
+
+</script>
+
+</body>
+
+</html>
