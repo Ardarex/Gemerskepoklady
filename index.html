@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Keramický klub – Rezervácia</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5efe8;
+      color: #3d3028;
+    }
+    .container {
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 35px;
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 10px;
+      font-size: 32px;
+    }
+    .subtitle {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #75665c;
+    }
+    .price {
+      text-align: center;
+      background: #f0e2d5;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 25px;
+      font-weight: bold;
+    }
+    label {
+      display: block;
+      margin-top: 18px;
+      margin-bottom: 7px;
+      font-weight: bold;
+    }
+    input,
+    select {
+      width: 100%;
+      padding: 13px;
+      border: 1px solid #d5c8bd;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+    button {
+      width: 100%;
+      margin-top: 25px;
+      padding: 15px;
+      border: 0;
+      border-radius: 9px;
+      background: #8c654d;
+      color: white;
+      font-size: 17px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #704d39;
+    }
+    .info {
+      margin-top: 20px;
+      font-size: 14px;
+      color: #75665c;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Keramický klub</h1>
+    <p class="subtitle">
+      Rezervujte si svoje miesto na vybraný termín.
+    </p>
+    <div class="price">
+      Cena: 7 € / osoba &nbsp; | &nbsp; Kapacita: max. 10 osôb na termín
+    </div>
+    <form action="mailto:renata.ksenicova@gos.sk"
+          method="post"
+          enctype="text/plain">
+      <label for="meno">Meno a priezvisko</label>
+      <input
+        type="text"
+        id="meno"
+        name="Meno a priezvisko"
+        required
+        placeholder="Vaše meno"
+      >
+      <label for="telefon">Telefónne číslo</label>
+      <input
+        type="tel"
+        id="telefon"
+        name="Telefón"
+        required
+        placeholder="+421 900 000 000"
+      >
+      <label for="email">E-mail</label>
+      <input
+        type="email"
+        id="email"
+        name="E-mail"
+        required
+        placeholder="vas@email.sk"
+      >
+      <label for="termin">Vyberte termín</label>
+      <select id="termin" name="Termín" required>
+        <option value="">-- Vyberte termín --</option>
+        <option value="1. október">1. október</option>
+        <option value="15. október">15. október</option>
+        <option value="29. október">29. október</option>
+        <option value="12. november">12. november</option>
+        <option value="26. november">26. november</option>
+        <option value="10. december">10. december</option>
+      </select>
+      <button type="submit">
+        Odoslať rezerváciu
+      </button>
+    </form>
+    <div class="info">
+      Po odoslaní bude rezervácia zaslaná na
+      <strong>renata.ksenicova@gos.sk</strong>.
+    </div>
+  </div>
+</body>
+</html>
