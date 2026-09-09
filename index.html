@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Keramický klub – Rezervácia</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5eee7;
+      color: #3d3028;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 20px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 18px;
+      padding: 35px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+      text-align: center;
+      margin: 0 0 10px;
+      font-size: 32px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #806c5d;
+      margin-bottom: 30px;
+    }
+
+    label {
+      display: block;
+      margin-top: 18px;
+      margin-bottom: 7px;
+      font-weight: bold;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 13px;
+      border: 1px solid #d8cbc0;
+      border-radius: 9px;
+      font-size: 16px;
+      background: #fff;
+    }
+
+    input:focus,
+    select:focus {
+      outline: none;
+      border-color: #9b7356;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 28px;
+      padding: 15px;
+      border: none;
+      border-radius: 10px;
+      background: #8d654c;
+      color: white;
+      font-size: 17px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #704d38;
+    }
+
+    .note {
+      margin-top: 18px;
+      text-align: center;
+      font-size: 13px;
+      color: #8b7b70;
+    }
+
+    .success {
+      display: none;
+      margin-top: 20px;
+      padding: 14px;
+      border-radius: 8px;
+      background: #e8f3e8;
+      color: #3d6840;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <div class="card">
+
+      <h1>🏺 Keramický klub</h1>
+
+      <div class="subtitle">
+        Rezervujte si svoj termín
+      </div>
+
+      <form id="reservationForm">
+
+        <label for="name">Meno a priezvisko</label>
+        <input
+          type="text"
+          id="name"
+          name="name"
+          placeholder="Vaše meno"
+          required
+        >
+
+        <label for="phone">Telefónne číslo</label>
+        <input
+          type="tel"
+          id="phone"
+          name="phone"
+          placeholder="+421 900 000 000"
+          required
+        >
+
+        <label for="email">
