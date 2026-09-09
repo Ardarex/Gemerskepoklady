@@ -12,9 +12,8 @@ export default async function handler(req, res) {
       });
     }
 
-    const SUPABASE_URL = "SEM_VLOZ_API_URL";
-    const SUPABASE_KEY = "SEM_VLOZ_PUBLISHABLE_KEY";
-
+    const SUPABASE_URL = "https://udrkkbpsfsbuvojzqfjm.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_cxg93Fv-VJz7W8h5sTh9Aw_bMqW0feT";
     const response = await fetch(
       `${SUPABASE_URL}/rest/v1/reservations`,
       {
