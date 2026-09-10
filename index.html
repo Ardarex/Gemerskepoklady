@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Keramický klub</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f7f3ee;
+      color: #3d3028;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: auto;
+      padding: 30px 20px 50px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 32px;
+    }
+
+    .intro {
+      text-align: center;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .price {
+      text-align: center;
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 30px;
+    }
+
+    .terms {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 30px;
+    }
+
+    .term {
+      width: 100%;
+      padding: 16px;
+      border: 2px solid #cbb8a8;
+      border-radius: 12px;
+      background: white;
+      color: #3d3028;
+      font-size: 17px;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .term.selected {
+      border-color: #6d503c;
+      background: #eee3d8;
+    }
+
+    .term.full {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .term strong {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    form {
+      background: white;
+      padding: 25px;
+      border-radius: 15px;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      margin-bottom: 6px;
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      padding: 13px;
+      border: 1px solid #cbb8a8;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    .submit {
+      width: 100%;
+      margin-top: 25px;
+      padding: 15px;
+      border: 0;
+      border-radius: 10px;
+      background: #6d503c;
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .submit:disabled {
+      opacity: 0.6;
+    }
+
+    #message {
+      display: none;
+      margin-top: 20px;
+      padding: 14px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .success {
+      display: block !important;
+      background: #e2f1e3;
+      color: #285b2b;
+    }
+
+    .error {
+      display: block !important;
+      background: #f8dddd;
+      color: #8a2020;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <h1>Keramický klub</h1>
+
+  <div class="intro">
+    Príď si oddýchnuť, tvoriť a užiť si príjemný čas pri keramike.
+  </div>
+
+  <div class="price">
+    Cena: 7 € / osoba
+  </div>
+
+  <h2>Vyberte si termín</h2>
+
+  <div class="terms" id="terms"></div>
+
+  <form id="reservationForm">
+
+    <label for="name">Meno a priezvisko</label>
+    <input type="text" id="name" required>
+
+    <label for="phone">Telefón</label>
+    <input type="tel" id="phone" required>
+
+    <label for="email">E-mail</label>
+    <input type="email" id="email" required>
+
+    <input type="hidden" id="date">
+
+    <button class="submit" id="submitButton" type="submit">
+      Odoslať rezerváciu
+    </button>
+
+    <div id="message"></div>
+
+  </form>
+
+</div>
+
+<script>
+
+const terms = [
+  "1. október",
+  "15. október",
+  "29. október",
+  "12. november",
+  "26. november",
+  "10. december"
+];
+
+const termsContainer = document.getElementById("terms");
+const dateInput = document.getElementById("date");
+const form = document.getElementById("reservationForm");
+const message = document.getElementById("message");
+const submitButton = document.getElementById("submitButton");
+
+let counts = {};
+
+
+// VŽDY ZOBRAZÍ TERMÍNY
+function showTerms() {
+
+  termsContainer.innerHTML = "";
+
+  terms.forEach((date) => {
+
+    const count = counts[date] || 0;
+    const available = 10 - count;
+
+    const button = document.createElement("button");
+
+    button.type = "button";
+    button.className = "term";
+
+    if (available <= 0) {
+
+      button.classList.add("full");
+
+      button.disabled = true;
+
+      button.innerHTML = `
+        <strong>${date}</strong>
+        OBSADENÉ
+      `;
+
+    } else {
+
+      button.innerHTML = `
+        <strong>${date}</strong>
+        ${available}/10 voľných miest
+      `;
+
+      button.onclick = function() {
+
+        document.querySelectorAll(".term").forEach((item) => {
+          item.classList.remove("selected");
+        });
+
+        button.classList.add("selected");
+
+        dateInput.value = date;
+      };
+    }
+
+    termsContainer.appendChild(button);
+  });
+}
+
+
+// Na začiatku zobrazíme všetky termíny
+terms.forEach((date) => {
+  counts[date] = 0;
+});
+
+showTerms();
+
+
+// Potom skúsime načítať skutočný počet rezervácií
+async function loadReservations() {
+
+  try {
+
+    const response = await fetch("/api/reservations");
+
+    if (!response.ok) {
+      return;
+    }
+
+    const data = await response.json();
+
+    if (data.counts) {
+      counts = data.counts;
+      showTerms();
+    }
+
+  } catch (error) {
+
+    console.log("Počet rezervácií sa zatiaľ nepodarilo načítať.");
+
+  }
+}
+
+loadReservations();
+
+
+// ODOSLANIE REZERVÁCIE
+form.addEventListener("submit", async function(event) {
+
+  event.preventDefault();
+
+  message.className = "";
+  message.style.display = "none";
+
+  const name = document.getElementById("name").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const date = dateInput.value;
+
+  if (!date) {
+
+    message.textContent = "Najprv vyberte termín.";
+    message.className = "error";
+
+    return;
+  }
+
+  submitButton.disabled = true;
+  submitButton.textContent = "Odosielam...";
+
+  try {
+
+    const response = await fetch("/api/reservations", {
+
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json"
+      },
+
+      body: JSON.stringify({
+        name: name,
+        phone: phone,
+        email: email,
+        date: date
+      })
+
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.error || "Rezerváciu sa nepodarilo odoslať."
+      );
+    }
+
+    message.textContent =
+      "Rezervácia bola úspešne odoslaná. Ďakujeme!";
+
+    message.className = "success";
+
+    form.reset();
+    dateInput.value = "";
+
+    await loadReservations();
+
+  } catch (error) {
+
+    message.textContent = error.message;
+    message.className = "error";
+
+  } finally {
+
+    submitButton.disabled = false;
+    submitButton.textContent = "Odoslať rezerváciu";
+
+  }
+
+});
+
+</script>
+
+</body>
+</html>
