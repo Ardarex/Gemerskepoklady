@@ -332,7 +332,7 @@ export default async function handler(req, res) {
 
               <p>
                 <strong>Cena:</strong>
-                7 € / osoba
+                7 € na hodinu / osoba
               </p>
 
               <hr>
