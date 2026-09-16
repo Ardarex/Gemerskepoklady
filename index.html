@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Keramický klub – Rezervácia</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f7f3ef;
+      color: #333;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    .term {
+      background: white;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 10px;
+      cursor: pointer;
+      border: 2px solid transparent;
+    }
+
+    .term:hover {
+      border-color: #999;
+    }
+
+    .term.selected {
+      border-color: #333;
+    }
+
+    .availability {
+      font-weight: bold;
+      margin-top: 5px;
+    }
+
+    .times {
+      display: none;
+      margin-top: 15px;
+    }
+
+    .times.show {
+      display: block;
+    }
+
+    .time-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .time-button {
+      padding: 10px 14px;
+      border: 1px solid #999;
+      background: white;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    .time-button:hover {
+      border-color: #333;
+    }
+
+    .time-button.selected {
+      background: #333;
+      color: white;
+    }
+
+    .selected-time {
+      margin-top: 12px;
+      font-weight: bold;
+    }
+
+    form {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      margin-top: 25px;
+    }
+
+    label {
+      display: block;
+      margin-top: 12px;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 11px;
+      border: 1px solid #aaa;
+      border-radius: 7px;
+      font-size: 16px;
+    }
+
+    button[type="submit"] {
+      width: 100%;
+      padding: 14px;
+      margin-top: 20px;
+      border: none;
+      border-radius: 8px;
+      background: #333;
+      color: white;
+      font-size: 17px;
+      cursor: pointer;
+    }
+
+    button[type="submit"]:disabled {
+      background: #999;
+      cursor: not-allowed;
+    }
+
+    .email-info {
+      font-size: 13px;
+      color: #777;
+      text-align: center;
+      line-height: 1.4;
+      margin-top: 10px;
+    }
+
+    #message {
+      margin-top: 15px;
+      font-weight: bold;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>Keramický klub</h1>
+
+  <p>
+    Vyberte si termín a čas rezervácie.
+  </p>
+
+  <div id="terms"></div>
+
+  <form id="reservationForm">
+
+    <input type="hidden" id="date" name="date">
+    <input type="hidden" id="start_time" name="start_time">
+    <input type="hidden" id="end_time" name="end_time">
+
+    <label for="name">Meno a priezvisko</label>
+    <input
+      type="text"
+      id="name"
+      name="name"
+      required
+    >
+
+    <label for="phone">Telefón</label>
+    <input
+      type="tel"
+      id="phone"
+      name="phone"
+      required
+    >
+
+    <label for="email">E-mail</label>
+    <input
+      type="email"
+      id="email"
+      name="email"
+      required
+    >
+
+    <button type="submit" id="submitButton">
+      Odoslať rezerváciu
+    </button>
+
+    <p class="email-info">
+      Po odoslaní vám príde potvrdzovací e-mail.
+      Ak ho nevidíte, skontrolujte aj priečinok
+      Spam alebo Nevyžiadaná pošta.
+    </p>
+
+    <div id="message"></div>
+
+  </form>
+
+  <script>
+
+    const TERMS = [
+      "1. október",
+      "15. október",
+      "29. október",
+      "12. november",
+      "26. november",
+      "10. december"
+    ];
+
+    const HOURS = [
+      "14:00",
+      "15:00",
+      "16:00",
+      "17:00",
+      "18:00",
+      "19:00"
+    ];
+
+    let counts = {};
+
+    let selectedDate = "";
+    let selectedStart = "";
+    let selectedEnd = "";
+
+    const termsContainer =
+      document.getElementById("terms");
+
+    const dateInput =
+      document.getElementById("date");
+
+    const startInput =
+      document.getElementById("start_time");
+
+    const endInput =
+      document.getElementById("end_time");
+
+
+    // =========================
+    // Načítanie počtu rezervácií
+    // =========================
+
+    async function loadReservations() {
+
+      try {
+
+        const response =
+          await fetch("/api/reservations");
+
+        const data =
+          await response.json();
+
+        counts = data.counts || {};
+
+      } catch (error) {
+
+        console.error(error);
+
+        TERMS.forEach(term => {
+          counts[term] = 0;
+        });
+      }
+
+      renderTerms();
+    }
+
+
+    // =========================
+    // Zobrazenie termínov
+    // =========================
+
+    function renderTerms() {
+
+      termsContainer.innerHTML = "";
+
+      TERMS.forEach(term => {
+
+        const count = counts[term] || 0;
+
+        const remaining =
+          Math.max(0, 10 - count);
+
+        const termDiv =
+          document.createElement("div");
+
+        termDiv.className = "term";
+
+        if (selectedDate === term) {
+          termDiv.classList.add("selected");
+        }
+
+        termDiv.innerHTML = `
+
+          <strong>${term}</strong>
+
+          <div class="availability">
+            ${remaining}/10 voľných miest
+          </div>
+
+          <div class="times ${
+            selectedDate === term ? "show" : ""
+          }">
+
+            <div>
+              Vyberte čas:
+            </div>
+
+            <div class="time-buttons">
+
+              ${HOURS.map(hour => `
+
+                <button
+                  type="button"
+                  class="time-button ${
+                    hour === selectedStart ||
+                    hour === selectedEnd
+                      ? "selected"
+                      : ""
+                  }"
+                  data-hour="${hour}"
+                >
+                  ${hour}
+                </button>
+
+              `).join("")}
+
+            </div>
+
+            <div class="selected-time">
+
+              ${
+                selectedDate === term &&
+                selectedStart &&
+                selectedEnd
+
+                ? `Vybraný čas:
+                   ${selectedStart} – ${selectedEnd}`
+
+                : selectedDate === term &&
+                  selectedStart
+
+                  ? `Začiatok:
+                     ${selectedStart}.
+                     Vyberte koniec.`
+
+                  : "Vyberte začiatok a koniec."
+              }
+
+            </div>
+
+          </div>
+        `;
+
+
+        // =========================
+        // Kliknutie na dátum
+        // =========================
+
+        termDiv.addEventListener(
+          "click",
+          function(event) {
+
+            if (
+              event.target.classList.contains(
+                "time-button"
+              )
+            ) {
+              return;
+            }
+
+            selectedDate = term;
+
+            selectedStart = "";
+            selectedEnd = "";
+
+            dateInput.value = "";
+            startInput.value = "";
+            endInput.value = "";
+
+            renderTerms();
+          }
+        );
+
+
+        // =========================
+        // Kliknutie na čas
+        // =========================
+
+        const timeButtons =
+          termDiv.querySelectorAll(
+            ".time-button"
+          );
+
+        timeButtons.forEach(button => {
+
+          button.addEventListener(
+            "click",
+            function(event) {
+
+              event.stopPropagation();
+
+              const hour =
+                this.dataset.hour;
+
+
+              // Prvé kliknutie
+              // = začiatok
+
+              if (!selectedStart) {
+
+                selectedStart = hour;
+                selectedEnd = "";
+
+              }
+
+
+              // Druhé kliknutie
+              // = koniec
+
+              else {
+
+                if (
+                  hour <= selectedStart
+                ) {
+
+                  selectedStart = hour;
+                  selectedEnd = "";
+
+                } else {
+
+                  selectedEnd = hour;
+
+                }
+              }
+
+
+              dateInput.value =
+                selectedDate;
+
+              startInput.value =
+                selectedStart;
+
+              endInput.value =
+                selectedEnd;
+
+              renderTerms();
+            }
+          );
+        });
+
+
+        termsContainer.appendChild(termDiv);
+
+      });
+    }
+
+
+    // =========================
+    // Odoslanie rezervácie
+    // =========================
+
+    document
+      .getElementById("reservationForm")
+      .addEventListener(
+        "submit",
+        async function(event) {
+
+          event.preventDefault();
+
+          const message =
+            document.getElementById(
+              "message"
+            );
+
+          const submitButton =
+            document.getElementById(
+              "submitButton"
+            );
+
+          message.textContent = "";
+
+
+          // Kontrola termínu
+
+          if (!selectedDate) {
+
+            message.textContent =
+              "Najprv vyberte termín.";
+
+            return;
+          }
+
+
+          // Kontrola času
+
+          if (
+            !selectedStart ||
+            !selectedEnd
+          ) {
+
+            message.textContent =
+              "Vyberte začiatok a koniec času.";
+
+            return;
+          }
+
+
+          const name =
+            document.getElementById(
+              "name"
+            ).value;
+
+          const phone =
+            document.getElementById(
+              "phone"
+            ).value;
+
+          const email =
+            document.getElementById(
+              "email"
+            ).value;
+
+
+          submitButton.disabled = true;
+
+          submitButton.textContent =
+            "Odosielam...";
+
+
+          try {
+
+            const response =
+              await fetch(
+                "/api/reservations",
+                {
+                  method: "POST",
+
+                  headers: {
+                    "Content-Type":
+                      "application/json"
+                  },
+
+                  body: JSON.stringify({
+
+                    name,
+                    phone,
+                    email,
+
+                    date:
+                      selectedDate,
+
+                    start_time:
+                      selectedStart,
+
+                    end_time:
+                      selectedEnd
+
+                  })
+                }
+              );
+
+
+            const data =
+              await response.json();
+
+
+            if (!response.ok) {
+
+              throw new Error(
+                data.error ||
+                "Rezerváciu sa nepodarilo odoslať."
+              );
+            }
+
+
+            message.textContent =
+              "Rezervácia bola úspešne odoslaná. Potvrdenie vám príde e-mailom.";
+
+
+            // Vyčistenie formulára
+
+            document
+              .getElementById(
+                "reservationForm"
+              )
+              .reset();
+
+
+            selectedDate = "";
+            selectedStart = "";
+            selectedEnd = "";
+
+            dateInput.value = "";
+            startInput.value = "";
+            endInput.value = "";
+
+
+            // Aktualizácia voľných miest
+
+            await loadReservations();
+
+
+          } catch (error) {
+
+            message.textContent =
+              error.message;
+
+          }
+
+
+          submitButton.disabled = false;
+
+          submitButton.textContent =
+            "Odoslať rezerváciu";
+
+        }
+      );
+
+
+    // =========================
+    // Spustenie stránky
+    // =========================
+
+    loadReservations();
+
+  </script>
+
+</body>
+</html>
