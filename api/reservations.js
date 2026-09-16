@@ -1,5 +1,5 @@
 const SUPABASE_URL = "https://udrkkbpsfsbuvojzqfjm.supabase.co";
-const SUPABASE_KEY = "SEM VLOZ SVOJ SUPABASE PUBLISHABLE KEY";
+const SUPABASE_KEY = "sb_publishable_cxg93Fv-VJz7W8h5sTh9Aw_bMqW0feT";
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 
