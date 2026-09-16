@@ -607,7 +607,7 @@ export default async function handler(req, res) {
 
             <p>
               <strong>Cena:</strong>
-              7 €
+              7 € / hodina
             </p>
           `
 
