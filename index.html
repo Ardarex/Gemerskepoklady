@@ -41,8 +41,6 @@
       padding: 42px 18px 60px;
     }
 
-    /* HLAVIČKA */
-
     .hero {
       text-align: center;
       margin-bottom: 32px;
@@ -88,8 +86,6 @@
       line-height: 1.6;
       color: #74665c;
     }
-
-    /* SEKCIE */
 
     .section {
       background: rgba(255, 255, 255, 0.88);
@@ -180,8 +176,6 @@
         transform: translateY(0);
       }
     }
-
-    /* KLUB */
 
     .section-content > p {
       color: #74665c;
@@ -302,8 +296,6 @@
       font-weight: 700;
     }
 
-    /* KURZ */
-
     .course-info {
       position: relative;
       padding: 20px;
@@ -375,8 +367,6 @@
       box-shadow: none;
     }
 
-    /* FORMULÁR */
-
     form {
       margin-top: 25px;
       padding: 25px 22px;
@@ -434,8 +424,6 @@
       box-shadow: none;
     }
 
-    /* GDPR */
-
     .gdpr {
       display: flex;
       align-items: flex-start;
@@ -487,8 +475,6 @@
       font-weight: 700;
       color: #72533f;
     }
-
-    /* MOBIL */
 
     @media (max-width: 600px) {
       .page {
@@ -769,6 +755,56 @@
       "10. december"
     ];
 
+    /*
+      Presné dátumy termínov.
+      Termín je možné rezervovať ešte počas celého svojho dňa.
+      Od nasledujúceho dňa sa automaticky zablokuje.
+    */
+
+    const TERM_DATES = {
+      "1. október": "2026-10-01",
+      "15. október": "2026-10-15",
+      "29. október": "2026-10-29",
+      "12. november": "2026-11-12",
+      "26. november": "2026-11-26",
+      "10. december": "2026-12-10"
+    };
+
+
+    function getTodayLocal() {
+
+      const parts =
+        new Intl.DateTimeFormat(
+          "en-CA",
+          {
+            timeZone: "Europe/Bratislava",
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit"
+          }
+        ).formatToParts(new Date());
+
+
+      const values = {};
+
+
+      parts.forEach(part => {
+
+        if (part.type !== "literal") {
+
+          values[part.type] =
+            part.value;
+
+        }
+
+      });
+
+
+      return `${values.year}-${values.month}-${values.day}`;
+
+    }
+
+
     const HOURS = [
       "14:00",
       "15:00",
@@ -779,11 +815,14 @@
 
 
     let availability = {
+
       club: {},
+
       course: {
         reserved: 0,
         available: 7
       }
+
     };
 
 
@@ -881,10 +920,13 @@
         const response =
           await fetch("/api/reservations");
 
+
         const data =
           await response.json();
 
+
         availability = data;
+
 
         renderTerms();
 
@@ -928,7 +970,28 @@
         const termDiv =
           document.createElement("div");
 
+
         termDiv.className = "term";
+
+
+        /*
+          Ak je termín v minulosti,
+          zobrazíme ho zoslabene a nedovolíme
+          naň kliknúť.
+        */
+
+        const isPast =
+          TERM_DATES[term] < getTodayLocal();
+
+
+        if (isPast) {
+
+          termDiv.style.opacity = "0.55";
+
+          termDiv.style.cursor =
+            "not-allowed";
+
+        }
 
 
         if (
@@ -946,7 +1009,8 @@
 
         if (
           selectedType === "club" &&
-          selectedDate === term
+          selectedDate === term &&
+          !isPast
         ) {
 
           timeHTML = `
@@ -974,6 +1038,7 @@
                     const used =
                       availability
                         .club?.[term]?.[hour] ?? 0;
+
 
                     const free =
                       Math.max(0, 10 - used);
@@ -1053,7 +1118,13 @@
           <strong>${term}</strong>
 
           <div class="availability">
-            Kliknite pre výber času.
+
+            ${
+              isPast
+                ? "Termín už prebehol a nie je možné ho rezervovať."
+                : "Kliknite pre výber času."
+            }
+
           </div>
 
           ${timeHTML}
@@ -1065,10 +1136,23 @@
           "click",
           function(event) {
 
+            /*
+              Minulé termíny sa nedajú vybrať.
+            */
+
+            if (isPast) {
+
+              return;
+
+            }
+
+
             if (
               event.target.tagName === "SELECT"
             ) {
+
               return;
+
             }
 
 
@@ -1105,11 +1189,13 @@
 
         if (
           selectedType === "club" &&
-          selectedDate === term
+          selectedDate === term &&
+          !isPast
         ) {
 
           const startSelect =
             document.getElementById("startSelect");
+
 
           const endSelect =
             document.getElementById("endSelect");
@@ -1117,6 +1203,7 @@
 
           startSelect.value =
             selectedStart;
+
 
           endSelect.value =
             selectedEnd;
@@ -1182,7 +1269,9 @@
       ).forEach(option => {
 
         if (!option.value) {
+
           return;
+
         }
 
 
@@ -1277,6 +1366,36 @@
 
               message.textContent =
                 "Vyberte termín.";
+
+              return;
+
+            }
+
+
+            /*
+              Kontrola aj pri odoslaní formulára.
+              Ak používateľ nechá stránku otvorenú
+              cez polnoc, starý termín už neodošleme.
+            */
+
+            if (
+              TERM_DATES[selectedDate] <
+              getTodayLocal()
+            ) {
+
+              message.textContent =
+                "Tento termín už nie je možné rezervovať.";
+
+              selectedDate = "";
+              selectedStart = "";
+              selectedEnd = "";
+
+              typeInput.value = "";
+              dateInput.value = "";
+              startInput.value = "";
+              endInput.value = "";
+
+              renderTerms();
 
               return;
 
