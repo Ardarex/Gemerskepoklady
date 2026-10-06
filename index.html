@@ -1,0 +1,1433 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Rezervačný systém GOS</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      color: #302923;
+      background:
+        radial-gradient(circle at top left, #f4e5d5 0%, transparent 35%),
+        radial-gradient(circle at bottom right, #ead7c7 0%, transparent 35%),
+        #f8f5f1;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.18;
+      background-image:
+        radial-gradient(#8b7564 0.6px, transparent 0.6px);
+      background-size: 18px 18px;
+    }
+
+    .page {
+      position: relative;
+      width: 100%;
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 42px 18px 60px;
+    }
+
+    /* HLAVIČKA */
+
+    .hero {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 15px;
+      margin-bottom: 18px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.75);
+      border: 1px solid rgba(111, 91, 76, 0.15);
+      box-shadow: 0 6px 20px rgba(71, 52, 39, 0.06);
+      font-size: 12px;
+      font-weight: bold;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: #806957;
+    }
+
+    .hero-badge span {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #9b6d50;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(34px, 8vw, 52px);
+      line-height: 1.05;
+      letter-spacing: -1.5px;
+      font-weight: 800;
+      color: #302923;
+    }
+
+    .intro {
+      max-width: 520px;
+      margin: 16px auto 0;
+      font-size: 16px;
+      line-height: 1.6;
+      color: #74665c;
+    }
+
+    /* SEKCIE */
+
+    .section {
+      background: rgba(255, 255, 255, 0.88);
+      border: 1px solid rgba(111, 91, 76, 0.14);
+      border-radius: 22px;
+      margin-bottom: 16px;
+      overflow: hidden;
+      box-shadow:
+        0 12px 35px rgba(72, 53, 40, 0.07),
+        0 2px 8px rgba(72, 53, 40, 0.04);
+      backdrop-filter: blur(8px);
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .section:hover {
+      transform: translateY(-2px);
+      box-shadow:
+        0 18px 42px rgba(72, 53, 40, 0.10),
+        0 3px 10px rgba(72, 53, 40, 0.05);
+    }
+
+    .section-header {
+      min-height: 78px;
+      padding: 20px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      user-select: none;
+      font-size: 20px;
+      font-weight: 700;
+      color: #352c27;
+      transition: background 0.2s ease;
+    }
+
+    .section-header:hover {
+      background: #fbf8f5;
+    }
+
+    .section-header::before {
+      content: "";
+      width: 5px;
+      height: 28px;
+      border-radius: 10px;
+      background: #9b6d50;
+      margin-right: 14px;
+    }
+
+    .section-header span:first-child {
+      flex: 1;
+    }
+
+    .arrow {
+      width: 34px;
+      height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: #f2ebe5;
+      color: #755540;
+      font-size: 14px;
+      transition: transform 0.25s ease, background 0.25s ease;
+    }
+
+    .section-header:hover .arrow {
+      background: #e9ddd4;
+    }
+
+    .section-content {
+      display: none;
+      padding: 0 22px 24px;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .section-content.show {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-5px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* KLUB */
+
+    .section-content > p {
+      color: #74665c;
+      line-height: 1.6;
+    }
+
+    .section-content > p:first-child {
+      margin-top: 0;
+      font-size: 15px;
+    }
+
+    .section-content > p:nth-child(2) {
+      margin-bottom: 18px;
+    }
+
+    .term {
+      background: #fcfaf8;
+      border: 1px solid #eadfd7;
+      border-radius: 16px;
+      padding: 17px;
+      margin: 10px 0;
+      cursor: pointer;
+      transition:
+        border-color 0.2s ease,
+        background 0.2s ease,
+        transform 0.2s ease;
+    }
+
+    .term:hover {
+      border-color: #c6aa94;
+      background: #fffdfb;
+      transform: translateY(-1px);
+    }
+
+    .term.selected {
+      border: 2px solid #9b6d50;
+      background: #fffdfb;
+      box-shadow: 0 7px 20px rgba(93, 64, 45, 0.08);
+    }
+
+    .term > strong {
+      font-size: 16px;
+      color: #3b3029;
+    }
+
+    .availability {
+      margin-top: 6px;
+      font-size: 13px;
+      color: #8a786b;
+    }
+
+    .times {
+      display: none;
+      margin-top: 18px;
+      padding-top: 17px;
+      border-top: 1px solid #eee4dc;
+    }
+
+    .times.show {
+      display: block;
+    }
+
+    .times > strong {
+      font-size: 14px;
+      color: #55463c;
+    }
+
+    .time-row {
+      margin-top: 14px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 7px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #594a40;
+    }
+
+    select,
+    input[type="text"],
+    input[type="tel"],
+    input[type="email"] {
+      width: 100%;
+      padding: 13px 14px;
+      border: 1px solid #d9ccc2;
+      border-radius: 11px;
+      background: #fff;
+      color: #302923;
+      font-family: inherit;
+      font-size: 16px;
+      outline: none;
+      transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+    }
+
+    select:focus,
+    input[type="text"]:focus,
+    input[type="tel"]:focus,
+    input[type="email"]:focus {
+      border-color: #9b6d50;
+      box-shadow: 0 0 0 4px rgba(155, 109, 80, 0.10);
+    }
+
+    select:disabled {
+      color: #aaa;
+      background: #f3f1ef;
+    }
+
+    .selected-time {
+      margin-top: 14px;
+      padding: 11px 13px;
+      border-radius: 10px;
+      background: #f2ebe5;
+      color: #73543f;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    /* KURZ */
+
+    .course-info {
+      position: relative;
+      padding: 20px;
+      margin-bottom: 17px;
+      border-radius: 16px;
+      background:
+        linear-gradient(135deg, #f7eee7, #fcf8f4);
+      border: 1px solid #eadbd0;
+      line-height: 1.8;
+    }
+
+    .course-info div {
+      color: #66564c;
+      font-size: 15px;
+    }
+
+    .course-info strong {
+      color: #3d322b;
+    }
+
+    .course-place {
+      margin-top: 13px !important;
+      padding-top: 13px;
+      border-top: 1px solid #e5d8ce;
+    }
+
+    #courseAvailability {
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: #eadfd6;
+      color: #72533e;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .course-button {
+      width: 100%;
+      padding: 15px 18px;
+      border: 0;
+      border-radius: 12px;
+      background: #352c27;
+      color: white;
+      font-family: inherit;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(53, 44, 39, 0.16);
+      transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease;
+    }
+
+    .course-button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      background: #493b33;
+      box-shadow: 0 12px 25px rgba(53, 44, 39, 0.20);
+    }
+
+    .course-button:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    .course-button:disabled {
+      background: #aaa;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    /* FORMULÁR */
+
+    form {
+      margin-top: 25px;
+      padding: 25px 22px;
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid rgba(111, 91, 76, 0.14);
+      border-radius: 22px;
+      box-shadow:
+        0 12px 35px rgba(72, 53, 40, 0.07),
+        0 2px 8px rgba(72, 53, 40, 0.04);
+    }
+
+    form h2 {
+      margin: 0 0 20px;
+      font-size: 22px;
+      color: #342b26;
+      letter-spacing: -0.3px;
+    }
+
+    form > label {
+      margin-top: 15px;
+    }
+
+    button[type="submit"] {
+      width: 100%;
+      padding: 15px 18px;
+      margin-top: 20px;
+      border: none;
+      border-radius: 12px;
+      background: #9b6d50;
+      color: white;
+      font-family: inherit;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(155, 109, 80, 0.22);
+      transition:
+        transform 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease;
+    }
+
+    button[type="submit"]:hover:not(:disabled) {
+      transform: translateY(-2px);
+      background: #865b41;
+      box-shadow: 0 12px 25px rgba(155, 109, 80, 0.28);
+    }
+
+    button[type="submit"]:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    button[type="submit"]:disabled {
+      background: #aaa;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    /* GDPR */
+
+    .gdpr {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-top: 20px;
+      padding: 14px;
+      border-radius: 12px;
+      background: #faf7f4;
+      border: 1px solid #eee4dc;
+    }
+
+    .gdpr input {
+      width: 18px;
+      height: 18px;
+      margin: 2px 0 0;
+      flex-shrink: 0;
+      accent-color: #9b6d50;
+      cursor: pointer;
+    }
+
+    .gdpr label {
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.55;
+      font-weight: normal;
+      color: #6f6259;
+    }
+
+    .gdpr a {
+      color: #8b5e43;
+      font-weight: 700;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .email-info {
+      margin: 12px 0 0;
+      text-align: center;
+      color: #91847b;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    #message {
+      margin-top: 16px;
+      padding: 0;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 700;
+      color: #72533f;
+    }
+
+    /* MOBIL */
+
+    @media (max-width: 600px) {
+      .page {
+        padding: 28px 13px 45px;
+      }
+
+      .hero {
+        margin-bottom: 24px;
+      }
+
+      h1 {
+        font-size: 37px;
+      }
+
+      .intro {
+        font-size: 15px;
+        padding: 0 10px;
+      }
+
+      .section {
+        border-radius: 18px;
+      }
+
+      .section-header {
+        min-height: 70px;
+        padding: 17px;
+        font-size: 18px;
+      }
+
+      .section-content {
+        padding: 0 17px 20px;
+      }
+
+      .term {
+        padding: 15px;
+      }
+
+      form {
+        padding: 21px 17px;
+        border-radius: 18px;
+      }
+
+      form h2 {
+        font-size: 20px;
+      }
+
+      .hero-badge {
+        font-size: 11px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="page">
+
+    <div class="hero">
+
+      <div class="hero-badge">
+        <span></span>
+        Gemerské osvetové stredisko
+      </div>
+
+      <h1>Rezervačný systém GOS</h1>
+
+      <p class="intro">
+        Vyberte si aktivitu, o ktorú máte záujem.
+      </p>
+
+    </div>
+
+
+    <!-- KERAMICKÝ KLUB -->
+
+    <div class="section">
+
+      <div class="section-header" id="clubHeader">
+        <span>Keramický klub</span>
+        <span class="arrow" id="clubArrow">▼</span>
+      </div>
+
+      <div class="section-content" id="clubContent">
+
+        <p>
+          Cena: <strong>7 € / hodina</strong>
+        </p>
+
+        <p>
+          Vyberte si termín a čas.
+        </p>
+
+        <div id="terms"></div>
+
+      </div>
+
+    </div>
+
+
+    <!-- KERAMICKÝ KURZ -->
+
+    <div class="section">
+
+      <div class="section-header" id="courseHeader">
+        <span>Keramický kurz</span>
+        <span class="arrow" id="courseArrow">▼</span>
+      </div>
+
+      <div class="section-content" id="courseContent">
+
+        <div class="course-info">
+
+          <div>
+            <strong>Termín:</strong>
+            13. október – 1. december
+          </div>
+
+          <div>
+            <strong>Cena:</strong>
+            170 €
+          </div>
+
+          <div class="course-place">
+            <span id="courseAvailability">
+              Načítavam voľné miesta...
+            </span>
+          </div>
+
+        </div>
+
+        <p>
+          Prihlásenie na kurz je bez výberu termínu a času.
+        </p>
+
+        <button
+          type="button"
+          id="courseButton"
+          class="course-button"
+        >
+          Prihlásiť sa na kurz
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <!-- FORMULÁR -->
+
+    <form id="reservationForm">
+
+      <input
+        type="hidden"
+        id="type"
+        name="type"
+      >
+
+      <input
+        type="hidden"
+        id="date"
+        name="date"
+      >
+
+      <input
+        type="hidden"
+        id="start_time"
+        name="start_time"
+      >
+
+      <input
+        type="hidden"
+        id="end_time"
+        name="end_time"
+      >
+
+
+      <h2 id="formTitle">
+        Údaje
+      </h2>
+
+
+      <label for="name">
+        Meno a priezvisko
+      </label>
+
+      <input
+        type="text"
+        id="name"
+        name="name"
+        required
+      >
+
+
+      <label for="phone">
+        Telefón
+      </label>
+
+      <input
+        type="tel"
+        id="phone"
+        name="phone"
+        required
+      >
+
+
+      <label for="email">
+        E-mail
+      </label>
+
+      <input
+        type="email"
+        id="email"
+        name="email"
+        required
+      >
+
+
+      <!-- GDPR -->
+
+      <div class="gdpr">
+
+        <input
+          type="checkbox"
+          id="gdpr"
+          name="gdpr"
+          required
+        >
+
+        <label for="gdpr">
+
+          Súhlasím so spracovaním osobných údajov podľa
+
+          <a
+            href="gdpr.html"
+            target="_blank"
+            rel="noopener"
+          >
+            Zásad ochrany osobných údajov
+          </a>.
+
+        </label>
+
+      </div>
+
+
+      <button
+        type="submit"
+        id="submitButton"
+      >
+        Odoslať rezerváciu
+      </button>
+
+
+      <p class="email-info">
+
+        Po odoslaní vám príde potvrdzovací e-mail.
+        Ak ho nevidíte, skontrolujte aj priečinok
+        Spam alebo Nevyžiadaná pošta.
+
+      </p>
+
+
+      <div id="message"></div>
+
+    </form>
+
+  </div>
+
+
+  <script>
+
+    const TERMS = [
+      "1. október",
+      "15. október",
+      "29. október",
+      "12. november",
+      "26. november",
+      "10. december"
+    ];
+
+    const HOURS = [
+      "14:00",
+      "15:00",
+      "16:00",
+      "17:00",
+      "18:00"
+    ];
+
+
+    let availability = {
+      club: {},
+      course: {
+        reserved: 0,
+        available: 7
+      }
+    };
+
+
+    let selectedType = "";
+    let selectedDate = "";
+    let selectedStart = "";
+    let selectedEnd = "";
+
+
+    const clubHeader =
+      document.getElementById("clubHeader");
+
+    const clubContent =
+      document.getElementById("clubContent");
+
+    const clubArrow =
+      document.getElementById("clubArrow");
+
+
+    const courseHeader =
+      document.getElementById("courseHeader");
+
+    const courseContent =
+      document.getElementById("courseContent");
+
+    const courseArrow =
+      document.getElementById("courseArrow");
+
+
+    const termsContainer =
+      document.getElementById("terms");
+
+
+    const courseAvailability =
+      document.getElementById("courseAvailability");
+
+
+    const courseButton =
+      document.getElementById("courseButton");
+
+
+    const formTitle =
+      document.getElementById("formTitle");
+
+
+    const typeInput =
+      document.getElementById("type");
+
+    const dateInput =
+      document.getElementById("date");
+
+    const startInput =
+      document.getElementById("start_time");
+
+    const endInput =
+      document.getElementById("end_time");
+
+
+    clubHeader.addEventListener(
+      "click",
+      function() {
+
+        const isOpen =
+          clubContent.classList.contains("show");
+
+        clubContent.classList.toggle("show");
+
+        clubArrow.textContent =
+          isOpen ? "▼" : "▲";
+
+      }
+    );
+
+
+    courseHeader.addEventListener(
+      "click",
+      function() {
+
+        const isOpen =
+          courseContent.classList.contains("show");
+
+        courseContent.classList.toggle("show");
+
+        courseArrow.textContent =
+          isOpen ? "▼" : "▲";
+
+      }
+    );
+
+
+    async function loadAvailability() {
+
+      try {
+
+        const response =
+          await fetch("/api/reservations");
+
+        const data =
+          await response.json();
+
+        availability = data;
+
+        renderTerms();
+
+
+        const available =
+          data.course?.available ?? 7;
+
+
+        courseAvailability.textContent =
+          `${available}/7 voľných miest`;
+
+
+        if (available <= 0) {
+
+          courseButton.disabled = true;
+
+          courseButton.textContent =
+            "Kurz je plne obsadený";
+
+        }
+
+      } catch (error) {
+
+        console.error(error);
+
+        courseAvailability.textContent =
+          "Nepodarilo sa načítať voľné miesta.";
+
+      }
+
+    }
+
+
+    function renderTerms() {
+
+      termsContainer.innerHTML = "";
+
+
+      TERMS.forEach(term => {
+
+        const termDiv =
+          document.createElement("div");
+
+        termDiv.className = "term";
+
+
+        if (
+          selectedType === "club" &&
+          selectedDate === term
+        ) {
+
+          termDiv.classList.add("selected");
+
+        }
+
+
+        let timeHTML = "";
+
+
+        if (
+          selectedType === "club" &&
+          selectedDate === term
+        ) {
+
+          timeHTML = `
+
+            <div class="times show">
+
+              <strong>
+                Vyberte začiatok a koniec:
+              </strong>
+
+              <div class="time-row">
+
+                <label>
+                  Od:
+                </label>
+
+                <select id="startSelect">
+
+                  <option value="">
+                    Vyberte čas
+                  </option>
+
+                  ${HOURS.map(hour => {
+
+                    const used =
+                      availability
+                        .club?.[term]?.[hour] ?? 0;
+
+                    const free =
+                      Math.max(0, 10 - used);
+
+
+                    return `
+
+                      <option
+                        value="${hour}"
+                        ${free <= 0 ? "disabled" : ""}
+                      >
+
+                        ${hour}
+                        (${free}/10 voľných)
+
+                      </option>
+
+                    `;
+
+                  }).join("")}
+
+                </select>
+
+              </div>
+
+
+              <div class="time-row">
+
+                <label>
+                  Do:
+                </label>
+
+                <select id="endSelect">
+
+                  <option value="">
+                    Vyberte čas
+                  </option>
+
+                  ${[
+                    "15:00",
+                    "16:00",
+                    "17:00",
+                    "18:00",
+                    "19:00"
+                  ].map(hour => `
+
+                    <option value="${hour}">
+                      ${hour}
+                    </option>
+
+                  `).join("")}
+
+                </select>
+
+              </div>
+
+
+              <div class="selected-time">
+
+                ${
+                  selectedStart && selectedEnd
+                    ? `Vybraný čas: ${selectedStart} – ${selectedEnd}`
+                    : "Najprv vyberte začiatok a potom koniec."
+                }
+
+              </div>
+
+            </div>
+
+          `;
+
+        }
+
+
+        termDiv.innerHTML = `
+
+          <strong>${term}</strong>
+
+          <div class="availability">
+            Kliknite pre výber času.
+          </div>
+
+          ${timeHTML}
+
+        `;
+
+
+        termDiv.addEventListener(
+          "click",
+          function(event) {
+
+            if (
+              event.target.tagName === "SELECT"
+            ) {
+              return;
+            }
+
+
+            selectedType = "club";
+
+            selectedDate = term;
+
+            selectedStart = "";
+
+            selectedEnd = "";
+
+
+            typeInput.value = "club";
+
+            dateInput.value = term;
+
+            startInput.value = "";
+
+            endInput.value = "";
+
+
+            formTitle.textContent =
+              "Rezervácia – Keramický klub";
+
+
+            renderTerms();
+
+          }
+        );
+
+
+        termsContainer.appendChild(termDiv);
+
+
+        if (
+          selectedType === "club" &&
+          selectedDate === term
+        ) {
+
+          const startSelect =
+            document.getElementById("startSelect");
+
+          const endSelect =
+            document.getElementById("endSelect");
+
+
+          startSelect.value =
+            selectedStart;
+
+          endSelect.value =
+            selectedEnd;
+
+
+          startSelect.addEventListener(
+            "change",
+            function() {
+
+              selectedStart =
+                this.value;
+
+              selectedEnd = "";
+
+              endSelect.value = "";
+
+              startInput.value =
+                selectedStart;
+
+              endInput.value = "";
+
+              updateEndOptions(endSelect);
+
+            }
+          );
+
+
+          endSelect.addEventListener(
+            "change",
+            function() {
+
+              selectedEnd =
+                this.value;
+
+              endInput.value =
+                selectedEnd;
+
+              renderTerms();
+
+            }
+          );
+
+
+          updateEndOptions(endSelect);
+
+        }
+
+      });
+
+    }
+
+
+    function updateEndOptions(endSelect) {
+
+      const start =
+        parseInt(
+          selectedStart.substring(0, 2)
+        );
+
+
+      Array.from(
+        endSelect.options
+      ).forEach(option => {
+
+        if (!option.value) {
+          return;
+        }
+
+
+        const end =
+          parseInt(
+            option.value.substring(0, 2)
+          );
+
+
+        option.disabled =
+          !selectedStart ||
+          end <= start;
+
+      });
+
+    }
+
+
+    courseButton.addEventListener(
+      "click",
+      function() {
+
+        selectedType = "course";
+
+        selectedDate = "";
+
+        selectedStart = "";
+
+        selectedEnd = "";
+
+
+        typeInput.value = "course";
+
+        dateInput.value = "";
+
+        startInput.value = "";
+
+        endInput.value = "";
+
+
+        formTitle.textContent =
+          "Prihlásenie – Keramický kurz";
+
+
+        document
+          .getElementById("reservationForm")
+          .scrollIntoView({
+            behavior: "smooth"
+          });
+
+      }
+    );
+
+
+    document
+      .getElementById("reservationForm")
+      .addEventListener(
+        "submit",
+        async function(event) {
+
+          event.preventDefault();
+
+
+          const message =
+            document.getElementById("message");
+
+
+          const submitButton =
+            document.getElementById("submitButton");
+
+
+          const gdpr =
+            document.getElementById("gdpr");
+
+
+          message.textContent = "";
+
+
+          if (!gdpr.checked) {
+
+            message.textContent =
+              "Pre odoslanie je potrebné súhlasiť so spracovaním osobných údajov.";
+
+            return;
+
+          }
+
+
+          if (selectedType === "club") {
+
+            if (!selectedDate) {
+
+              message.textContent =
+                "Vyberte termín.";
+
+              return;
+
+            }
+
+
+            if (!selectedStart || !selectedEnd) {
+
+              message.textContent =
+                "Vyberte začiatok a koniec času.";
+
+              return;
+
+            }
+
+          }
+
+
+          if (
+            selectedType !== "club" &&
+            selectedType !== "course"
+          ) {
+
+            message.textContent =
+              "Najprv si vyberte Keramický klub alebo Keramický kurz.";
+
+            return;
+
+          }
+
+
+          const name =
+            document.getElementById("name").value;
+
+
+          const phone =
+            document.getElementById("phone").value;
+
+
+          const email =
+            document.getElementById("email").value;
+
+
+          submitButton.disabled = true;
+
+          submitButton.textContent =
+            "Odosielam...";
+
+
+          try {
+
+            const response =
+              await fetch(
+                "/api/reservations",
+                {
+                  method: "POST",
+
+                  headers: {
+                    "Content-Type":
+                      "application/json"
+                  },
+
+                  body: JSON.stringify({
+
+                    type: selectedType,
+
+                    name,
+
+                    phone,
+
+                    email,
+
+                    date: selectedDate,
+
+                    start_time: selectedStart,
+
+                    end_time: selectedEnd
+
+                  })
+
+                }
+              );
+
+
+            const data =
+              await response.json();
+
+
+            if (!response.ok) {
+
+              throw new Error(
+                data.error ||
+                "Registrácia sa nepodarila."
+              );
+
+            }
+
+
+            message.textContent =
+              data.message ||
+              "Registrácia bola úspešná.";
+
+
+            document
+              .getElementById("reservationForm")
+              .reset();
+
+
+            selectedType = "";
+
+            selectedDate = "";
+
+            selectedStart = "";
+
+            selectedEnd = "";
+
+
+            typeInput.value = "";
+
+            dateInput.value = "";
+
+            startInput.value = "";
+
+            endInput.value = "";
+
+
+            renderTerms();
+
+            await loadAvailability();
+
+
+          } catch (error) {
+
+            message.textContent =
+              error.message;
+
+          }
+
+
+          submitButton.disabled = false;
+
+          submitButton.textContent =
+            "Odoslať rezerváciu";
+
+        }
+      );
+
+
+    loadAvailability();
+
+  </script>
+
+</body>
+</html>
