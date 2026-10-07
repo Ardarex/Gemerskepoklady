@@ -1124,9 +1124,37 @@ export default async function handler(
          * -----------------------------------------------
          */
 
-        if (
-          !CLUB_TERMS.includes(date)
-        ) {
+        /*
+         * -----------------------------------------------
+         * 4. KONTROLA A NORMALIZÁCIA TERMÍNU
+         * -----------------------------------------------
+         *
+         * Frontend môže poslať:
+         * 15. október
+         * alebo:
+         * 2026-10-15
+         *
+         * API prijíma oba formáty.
+         */
+
+        let clubTermLabel = null;
+
+        if (CLUB_TERMS.includes(date)) {
+
+          clubTermLabel = date;
+
+        } else {
+
+          clubTermLabel =
+            CLUB_TERMS.find(
+              term =>
+                CLUB_TERM_DATES[term] === date
+            ) || null;
+
+        }
+
+
+        if (!clubTermLabel) {
 
           return res.status(400).json({
 
@@ -1145,7 +1173,7 @@ export default async function handler(
          */
 
         if (
-          !isClubDateAvailable(date)
+          !isClubDateAvailable(clubTermLabel)
         ) {
 
           return res.status(400).json({
@@ -1240,9 +1268,38 @@ export default async function handler(
 
         const clubReservations =
           reservations.filter(
-            item =>
-              isClubReservation(item) &&
-              item.date === date
+            item => {
+
+              if (
+                !isClubReservation(item)
+              ) {
+
+                return false;
+
+              }
+
+
+              if (
+                item.date === date
+              ) {
+
+                return true;
+
+              }
+
+
+              const itemTermLabel =
+                CLUB_TERMS.find(
+                  term =>
+                    CLUB_TERM_DATES[term] === item.date
+                );
+
+
+              return (
+                itemTermLabel === clubTermLabel
+              );
+
+            }
           );
 
 
@@ -1721,4 +1778,4 @@ export default async function handler(
   });
 
 }
-``
+```
