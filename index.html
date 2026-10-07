@@ -89,137 +89,6 @@
       color: #74665c;
     }
 
-    /* PRIHLASENIE */
-
-    .auth-box {
-      margin-bottom: 18px;
-      padding: 18px;
-      border-radius: 18px;
-      background: rgba(255, 255, 255, 0.92);
-      border: 1px solid rgba(111, 91, 76, 0.14);
-      box-shadow: 0 10px 28px rgba(72, 53, 40, 0.06);
-    }
-
-    .auth-actions {
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-
-    .auth-button {
-      padding: 11px 16px;
-      border: 0;
-      border-radius: 10px;
-      background: #352c27;
-      color: white;
-      font-family: inherit;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .auth-button.secondary {
-      background: #eadfd6;
-      color: #5d4738;
-    }
-
-    .auth-status {
-      margin-bottom: 12px;
-      text-align: center;
-      color: #74665c;
-      font-size: 14px;
-      line-height: 1.5;
-    }
-
-    .auth-form {
-      display: none;
-      margin-top: 15px;
-      padding-top: 15px;
-      border-top: 1px solid #eee4dc;
-    }
-
-    .auth-form.show {
-      display: block;
-    }
-
-    .auth-form input {
-      width: 100%;
-      padding: 12px 14px;
-      margin: 7px 0 11px;
-      border: 1px solid #d9ccc2;
-      border-radius: 10px;
-      background: #fff;
-      color: #302923;
-      font-family: inherit;
-      font-size: 16px;
-      outline: none;
-    }
-
-    .auth-form input:focus {
-      border-color: #9b6d50;
-      box-shadow: 0 0 0 4px rgba(155, 109, 80, 0.10);
-    }
-
-    .auth-message {
-      margin-top: 10px;
-      text-align: center;
-      color: #72533f;
-      font-size: 13px;
-      font-weight: 700;
-    }
-
-    /* ZABLOKOVANY KLUB */
-
-    .club-locked {
-      position: relative;
-    }
-
-    .club-locked .section-content {
-      position: relative;
-      min-height: 180px;
-    }
-
-    .club-locked .club-lock-content {
-      filter: blur(5px);
-      opacity: 0.35;
-      pointer-events: none;
-      user-select: none;
-    }
-
-    .club-lock-message {
-      position: absolute;
-      z-index: 5;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 25px;
-      text-align: center;
-      pointer-events: none;
-    }
-
-    .club-lock-message-inner {
-      max-width: 440px;
-      padding: 18px 20px;
-      border-radius: 15px;
-      background: rgba(255, 255, 255, 0.94);
-      border: 1px solid #eadfd7;
-      box-shadow: 0 10px 25px rgba(72, 53, 40, 0.10);
-      color: #55463c;
-      font-size: 15px;
-      font-weight: 700;
-      line-height: 1.5;
-    }
-
-    .club-locked .section-header {
-      cursor: default;
-    }
-
-    .club-locked .section-header .arrow {
-      opacity: 0.55;
-    }
-
     /* SEKCIE */
 
     .section {
@@ -395,8 +264,7 @@
     select,
     input[type="text"],
     input[type="tel"],
-    input[type="email"],
-    input[type="password"] {
+    input[type="email"] {
       width: 100%;
       padding: 13px 14px;
       border: 1px solid #d9ccc2;
@@ -414,8 +282,7 @@
     select:focus,
     input[type="text"]:focus,
     input[type="tel"]:focus,
-    input[type="email"]:focus,
-    input[type="password"]:focus {
+    input[type="email"]:focus {
       border-color: #9b6d50;
       box-shadow: 0 0 0 4px rgba(155, 109, 80, 0.10);
     }
@@ -557,6 +424,10 @@
       box-shadow: 0 12px 25px rgba(155, 109, 80, 0.28);
     }
 
+    button[type="submit"]:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
     button[type="submit"]:disabled {
       background: #aaa;
       cursor: not-allowed;
@@ -615,6 +486,85 @@
       font-size: 14px;
       font-weight: 700;
       color: #72533f;
+    }
+
+    /* PRIHLASENIE */
+
+    .auth-box {
+      margin-bottom: 18px;
+      padding: 18px;
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid rgba(111, 91, 76, 0.14);
+      border-radius: 18px;
+      box-shadow: 0 8px 25px rgba(72, 53, 40, 0.06);
+    }
+
+    .auth-box p {
+      margin: 8px 0 14px;
+      color: #74665c;
+      line-height: 1.5;
+    }
+
+    .auth-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .auth-buttons button {
+      border: 0;
+      border-radius: 11px;
+      padding: 11px 15px;
+      background: #352c27;
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .auth-buttons button.secondary {
+      background: #eadfd6;
+      color: #5d483a;
+    }
+
+    .club-lock-message {
+      padding: 17px;
+      border-radius: 14px;
+      background: #f7eee7;
+      border: 1px solid #eadbd0;
+      color: #604c3e;
+      line-height: 1.6;
+      font-weight: 700;
+    }
+
+    .auth-form {
+      display: none;
+      margin-top: 15px;
+      padding: 17px;
+      border-radius: 14px;
+      background: #faf7f4;
+      border: 1px solid #eee4dc;
+    }
+
+    .auth-form.show {
+      display: block;
+    }
+
+    .auth-form input {
+      width: 100%;
+      padding: 12px 13px;
+      margin-top: 7px;
+      margin-bottom: 12px;
+      border: 1px solid #d9ccc2;
+      border-radius: 10px;
+      font: inherit;
+    }
+
+    .auth-message {
+      margin-top: 10px;
+      color: #72533f;
+      font-size: 14px;
+      line-height: 1.5;
+      font-weight: 700;
     }
 
     /* MOBIL */
@@ -695,129 +645,156 @@
 
     <div class="auth-box">
 
-      <div
-        class="auth-status"
-        id="authStatus"
-      >
-        Nie ste prihlásený.
-      </div>
+      <div id="authLoggedOut">
 
-      <div
-        class="auth-actions"
-        id="authActions"
-      >
+        <strong>Prístup do Keramického klubu</strong>
 
-        <button
-          type="button"
-          class="auth-button"
-          id="loginButton"
-        >
-          Prihlásiť sa
-        </button>
+        <p>
+          Pre rezerváciu Keramického klubu sa musíte prihlásiť alebo vytvoriť účet.
+        </p>
 
-        <button
-          type="button"
-          class="auth-button secondary"
-          id="registerButton"
-        >
-          Vytvoriť účet
-        </button>
+        <div class="auth-buttons">
 
-      </div>
+          <button
+            type="button"
+            id="loginButton"
+          >
+            Prihlásiť sa
+          </button>
 
+          <button
+            type="button"
+            id="registerButton"
+            class="secondary"
+          >
+            Vytvoriť účet
+          </button>
 
-      <!-- PRIHLASOVACÍ FORMULÁR -->
+        </div>
 
-      <div
-        class="auth-form"
-        id="loginForm"
-      >
-
-        <label for="loginEmail">
-          E-mail
-        </label>
-
-        <input
-          type="email"
-          id="loginEmail"
-          autocomplete="email"
-        >
-
-        <label for="loginPassword">
-          Heslo
-        </label>
-
-        <input
-          type="password"
-          id="loginPassword"
-          autocomplete="current-password"
-        >
-
-        <button
-          type="button"
-          class="auth-button"
-          id="loginSubmit"
-        >
-          Prihlásiť sa
-        </button>
 
         <div
-          class="auth-message"
-          id="loginMessage"
-        ></div>
+          id="loginForm"
+          class="auth-form"
+        >
+
+          <label for="loginEmail">
+            E-mail
+          </label>
+
+          <input
+            type="email"
+            id="loginEmail"
+          >
+
+
+          <label for="loginPassword">
+            Heslo
+          </label>
+
+          <input
+            type="password"
+            id="loginPassword"
+          >
+
+
+          <div class="auth-buttons">
+
+            <button
+              type="button"
+              id="doLogin"
+            >
+              Prihlásiť sa
+            </button>
+
+          </div>
+
+
+          <div
+            id="loginMessage"
+            class="auth-message"
+          ></div>
+
+        </div>
+
+
+        <div
+          id="registerForm"
+          class="auth-form"
+        >
+
+          <label for="registerName">
+            Meno a priezvisko
+          </label>
+
+          <input
+            type="text"
+            id="registerName"
+          >
+
+
+          <label for="registerEmail">
+            E-mail
+          </label>
+
+          <input
+            type="email"
+            id="registerEmail"
+          >
+
+
+          <label for="registerPassword">
+            Heslo
+          </label>
+
+          <input
+            type="password"
+            id="registerPassword"
+          >
+
+
+          <div class="auth-buttons">
+
+            <button
+              type="button"
+              id="doRegister"
+            >
+              Vytvoriť účet
+            </button>
+
+          </div>
+
+
+          <div
+            id="registerMessage"
+            class="auth-message"
+          ></div>
+
+        </div>
 
       </div>
 
 
-      <!-- REGISTRÁCIA -->
-
       <div
-        class="auth-form"
-        id="registerForm"
+        id="authLoggedIn"
+        style="display:none;"
       >
 
-        <label for="registerName">
-          Meno a priezvisko
-        </label>
+        <strong id="userEmail"></strong>
 
-        <input
-          type="text"
-          id="registerName"
-          autocomplete="name"
-        >
+        <p id="clubAccessMessage"></p>
 
-        <label for="registerEmail">
-          E-mail
-        </label>
+        <div class="auth-buttons">
 
-        <input
-          type="email"
-          id="registerEmail"
-          autocomplete="email"
-        >
+          <button
+            type="button"
+            id="logoutButton"
+            class="secondary"
+          >
+            Odhlásiť sa
+          </button>
 
-        <label for="registerPassword">
-          Heslo
-        </label>
-
-        <input
-          type="password"
-          id="registerPassword"
-          autocomplete="new-password"
-        >
-
-        <button
-          type="button"
-          class="auth-button"
-          id="registerSubmit"
-        >
-          Vytvoriť účet
-        </button>
-
-        <div
-          class="auth-message"
-          id="registerMessage"
-        ></div>
+        </div>
 
       </div>
 
@@ -826,10 +803,7 @@
 
     <!-- KERAMICKÝ KLUB -->
 
-    <div
-      class="section club-locked"
-      id="clubSection"
-    >
+    <div class="section">
 
       <div
         class="section-header"
@@ -856,24 +830,13 @@
       >
 
         <div
-          class="club-lock-message"
           id="clubLockMessage"
-        >
-
-          <div class="club-lock-message-inner">
-
-            Pre rezerváciu Keramického klubu
-            sa musíte prihlásiť alebo vytvoriť účet.
-
-          </div>
-
-        </div>
+          class="club-lock-message"
+          style="display:none;"
+        ></div>
 
 
-        <div
-          class="club-lock-content"
-          id="clubLockContent"
-        >
+        <div id="clubBookingContent">
 
           <p>
             Cena: <strong>7 € / hodina</strong>
@@ -923,14 +886,26 @@
         <div class="course-info">
 
           <div>
-            <strong>Termín:</strong>
+
+            <strong>
+              Termín:
+            </strong>
+
             13. október – 1. december
+
           </div>
 
+
           <div>
-            <strong>Cena:</strong>
+
+            <strong>
+              Cena:
+            </strong>
+
             170 €
+
           </div>
+
 
           <div class="course-place">
 
@@ -942,9 +917,11 @@
 
         </div>
 
+
         <p>
           Prihlásenie na kurz je bez výberu termínu a času.
         </p>
+
 
         <button
           type="button"
@@ -1081,9 +1058,8 @@
   </div>
 
 
-  <!-- SUPABASE -->
-
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 
   <script>
 
@@ -1092,6 +1068,7 @@
 
     const SUPABASE_PUBLISHABLE_KEY =
       "sb_publishable_cxg93Fv-VJz7W8h5sTh9Aw_bMqW0feT";
+
 
     const supabaseClient =
       window.supabase.createClient(
@@ -1104,515 +1081,6 @@
 
     let clubMember = false;
 
-
-    const authStatus =
-      document.getElementById(
-        "authStatus"
-      );
-
-    const authActions =
-      document.getElementById(
-        "authActions"
-      );
-
-    const loginButton =
-      document.getElementById(
-        "loginButton"
-      );
-
-    const registerButton =
-      document.getElementById(
-        "registerButton"
-      );
-
-    const loginForm =
-      document.getElementById(
-        "loginForm"
-      );
-
-    const registerForm =
-      document.getElementById(
-        "registerForm"
-      );
-
-    const loginSubmit =
-      document.getElementById(
-        "loginSubmit"
-      );
-
-    const registerSubmit =
-      document.getElementById(
-        "registerSubmit"
-      );
-
-    const loginMessage =
-      document.getElementById(
-        "loginMessage"
-      );
-
-    const registerMessage =
-      document.getElementById(
-        "registerMessage"
-      );
-
-    const clubSection =
-      document.getElementById(
-        "clubSection"
-      );
-
-    const clubLockMessage =
-      document.getElementById(
-        "clubLockMessage"
-      );
-
-    const clubContent =
-      document.getElementById(
-        "clubContent"
-      );
-
-    const clubHeader =
-      document.getElementById(
-        "clubHeader"
-      );
-
-    const clubArrow =
-      document.getElementById(
-        "clubArrow"
-      );
-
-
-    function closeAuthForms() {
-
-      loginForm.classList.remove(
-        "show"
-      );
-
-      registerForm.classList.remove(
-        "show"
-      );
-
-    }
-
-
-    loginButton.addEventListener(
-      "click",
-      function() {
-
-        registerForm.classList.remove(
-          "show"
-        );
-
-        loginForm.classList.toggle(
-          "show"
-        );
-
-        loginMessage.textContent =
-          "";
-
-      }
-    );
-
-
-    registerButton.addEventListener(
-      "click",
-      function() {
-
-        loginForm.classList.remove(
-          "show"
-        );
-
-        registerForm.classList.toggle(
-          "show"
-        );
-
-        registerMessage.textContent =
-          "";
-
-      }
-    );
-
-
-    function updateClubLock() {
-
-      if (
-        currentUser &&
-        clubMember
-      ) {
-
-        clubSection.classList.remove(
-          "club-locked"
-        );
-
-        clubLockMessage.style.display =
-          "none";
-
-        clubHeader.style.cursor =
-          "pointer";
-
-      } else {
-
-        clubSection.classList.add(
-          "club-locked"
-        );
-
-        clubLockMessage.style.display =
-          "flex";
-
-
-        const lockText =
-          clubLockMessage.querySelector(
-            ".club-lock-message-inner"
-          );
-
-
-        if (
-          currentUser &&
-          !clubMember
-        ) {
-
-          lockText.textContent =
-            "Váš účet ešte nemá schválenie pre Keramický klub.";
-
-        } else {
-
-          lockText.textContent =
-            "Pre rezerváciu Keramického klubu sa musíte prihlásiť alebo vytvoriť účet.";
-
-        }
-
-
-        clubContent.classList.remove(
-          "show"
-        );
-
-        clubArrow.textContent =
-          "▼";
-
-        clubHeader.style.cursor =
-          "default";
-
-      }
-
-    }
-
-
-    async function loadAuthState() {
-
-      const result =
-        await supabaseClient.auth.getUser();
-
-
-      currentUser =
-        result.data.user || null;
-
-
-      clubMember =
-        false;
-
-
-      if (currentUser) {
-
-        const profileResult =
-          await supabaseClient
-            .from("profiles")
-            .select("club_member")
-            .eq(
-              "id",
-              currentUser.id
-            )
-            .maybeSingle();
-
-
-        if (
-          !profileResult.error &&
-          profileResult.data
-        ) {
-
-          clubMember =
-            profileResult.data.club_member === true;
-
-        }
-
-
-        if (clubMember) {
-
-          authStatus.textContent =
-            `Prihlásený: ${currentUser.email} – Keramický klub je dostupný.`;
-
-        } else {
-
-          authStatus.textContent =
-            `Prihlásený: ${currentUser.email} – váš účet ešte čaká na schválenie pre Keramický klub.`;
-
-        }
-
-
-        authActions.innerHTML = `
-
-          <button
-            type="button"
-            class="auth-button secondary"
-            id="logoutButton"
-          >
-            Odhlásiť sa
-          </button>
-
-        `;
-
-
-        document
-          .getElementById(
-            "logoutButton"
-          )
-          .addEventListener(
-            "click",
-            async function() {
-
-              await supabaseClient.auth
-                .signOut();
-
-              window.location.reload();
-
-            }
-          );
-
-
-        closeAuthForms();
-
-      } else {
-
-        authStatus.textContent =
-          "Nie ste prihlásený.";
-
-      }
-
-
-      updateClubLock();
-
-    }
-
-
-    registerSubmit.addEventListener(
-      "click",
-      async function() {
-
-        registerMessage.textContent =
-          "";
-
-
-        const name =
-          document
-            .getElementById(
-              "registerName"
-            )
-            .value
-            .trim();
-
-
-        const email =
-          document
-            .getElementById(
-              "registerEmail"
-            )
-            .value
-            .trim();
-
-
-        const password =
-          document
-            .getElementById(
-              "registerPassword"
-            )
-            .value;
-
-
-        if (
-          !name ||
-          !email ||
-          !password
-        ) {
-
-          registerMessage.textContent =
-            "Vyplňte meno, e-mail a heslo.";
-
-          return;
-
-        }
-
-
-        if (
-          password.length < 6
-        ) {
-
-          registerMessage.textContent =
-            "Heslo musí mať aspoň 6 znakov.";
-
-          return;
-
-        }
-
-
-        registerSubmit.disabled =
-          true;
-
-        registerSubmit.textContent =
-          "Vytváram účet...";
-
-
-        const result =
-          await supabaseClient.auth
-            .signUp({
-
-              email,
-
-              password,
-
-              options: {
-
-                data: {
-
-                  full_name:
-                    name
-
-                }
-
-              }
-
-            });
-
-
-        registerSubmit.disabled =
-          false;
-
-        registerSubmit.textContent =
-          "Vytvoriť účet";
-
-
-        if (result.error) {
-
-          registerMessage.textContent =
-            result.error.message;
-
-          return;
-
-        }
-
-
-        if (
-          !result.data.session
-        ) {
-
-          registerMessage.textContent =
-            "Účet bol vytvorený. Skontrolujte e-mail a potvrďte registráciu.";
-
-        } else {
-
-          registerMessage.textContent =
-            "Účet bol vytvorený. Klub bude dostupný po schválení.";
-
-          await loadAuthState();
-
-        }
-
-      }
-    );
-
-
-    loginSubmit.addEventListener(
-      "click",
-      async function() {
-
-        loginMessage.textContent =
-          "";
-
-
-        const email =
-          document
-            .getElementById(
-              "loginEmail"
-            )
-            .value
-            .trim();
-
-
-        const password =
-          document
-            .getElementById(
-              "loginPassword"
-            )
-            .value;
-
-
-        if (
-          !email ||
-          !password
-        ) {
-
-          loginMessage.textContent =
-            "Vyplňte e-mail a heslo.";
-
-          return;
-
-        }
-
-
-        loginSubmit.disabled =
-          true;
-
-        loginSubmit.textContent =
-          "Prihlasujem...";
-
-
-        const result =
-          await supabaseClient.auth
-            .signInWithPassword({
-
-              email,
-
-              password
-
-            });
-
-
-        loginSubmit.disabled =
-          false;
-
-        loginSubmit.textContent =
-          "Prihlásiť sa";
-
-
-        if (result.error) {
-
-          loginMessage.textContent =
-            result.error.message;
-
-          return;
-
-        }
-
-
-        await loadAuthState();
-
-      }
-    );
-
-
-    supabaseClient.auth
-      .onAuthStateChange(
-        function() {
-
-          setTimeout(
-            loadAuthState,
-            0
-          );
-
-        }
-      );
-
-
-    /* =========================
-       REZERVÁCIE
-    ========================= */
 
     const TERMS = [
 
@@ -1642,57 +1110,83 @@
       club: {},
 
       course: {
-
         reserved: 0,
-
         available: 7
-
       }
 
     };
 
 
     let selectedType = "";
-
     let selectedDate = "";
-
     let selectedStart = "";
-
     let selectedEnd = "";
 
 
-    clubHeader.addEventListener(
-      "click",
-      function() {
-
-        if (
-          !currentUser ||
-          !clubMember
-        ) {
-
-          return;
-
-        }
+    const authLoggedOut =
+      document.getElementById(
+        "authLoggedOut"
+      );
 
 
-        const isOpen =
-          clubContent.classList.contains(
-            "show"
-          );
+    const authLoggedIn =
+      document.getElementById(
+        "authLoggedIn"
+      );
 
 
-        clubContent.classList.toggle(
-          "show"
-        );
+    const userEmail =
+      document.getElementById(
+        "userEmail"
+      );
 
 
-        clubArrow.textContent =
-          isOpen
-            ? "▼"
-            : "▲";
+    const clubAccessMessage =
+      document.getElementById(
+        "clubAccessMessage"
+      );
 
-      }
-    );
+
+    const clubLockMessage =
+      document.getElementById(
+        "clubLockMessage"
+      );
+
+
+    const clubBookingContent =
+      document.getElementById(
+        "clubBookingContent"
+      );
+
+
+    const loginForm =
+      document.getElementById(
+        "loginForm"
+      );
+
+
+    const registerForm =
+      document.getElementById(
+        "registerForm"
+      );
+
+
+    const clubHeader =
+      document.getElementById(
+        "clubHeader"
+      );
+
+
+    const clubContent =
+      document.getElementById(
+        "clubContent"
+      );
+
+
+    const clubArrow =
+      document.getElementById(
+        "clubArrow"
+      );
 
 
     const courseHeader =
@@ -1700,10 +1194,12 @@
         "courseHeader"
       );
 
+
     const courseContent =
       document.getElementById(
         "courseContent"
       );
+
 
     const courseArrow =
       document.getElementById(
@@ -1759,6 +1255,404 @@
       );
 
 
+    /* =========================
+       PRIHLASENIE
+    ========================= */
+
+    async function updateAuthState() {
+
+      const {
+        data: {
+          user
+        }
+      } =
+        await supabaseClient.auth.getUser();
+
+
+      currentUser =
+        user || null;
+
+
+      clubMember = false;
+
+
+      if (!currentUser) {
+
+        authLoggedOut.style.display =
+          "block";
+
+        authLoggedIn.style.display =
+          "none";
+
+
+        clubLockMessage.style.display =
+          "block";
+
+
+        clubBookingContent.style.display =
+          "none";
+
+
+        return;
+
+      }
+
+
+      authLoggedOut.style.display =
+        "none";
+
+
+      authLoggedIn.style.display =
+        "block";
+
+
+      userEmail.textContent =
+        currentUser.email ||
+        "Prihlásený používateľ";
+
+
+      const {
+        data: profile
+      } =
+        await supabaseClient
+
+          .from("profiles")
+
+          .select("club_member")
+
+          .eq(
+            "id",
+            currentUser.id
+          )
+
+          .maybeSingle();
+
+
+      clubMember =
+        profile?.club_member === true;
+
+
+      if (!clubMember) {
+
+        clubAccessMessage.textContent =
+          "Váš účet ešte nemá schválenie pre Keramický klub.";
+
+
+        clubLockMessage.textContent =
+          "Váš účet ešte nemá schválenie pre Keramický klub.";
+
+
+        clubLockMessage.style.display =
+          "block";
+
+
+        clubBookingContent.style.display =
+          "none";
+
+      } else {
+
+        clubAccessMessage.textContent =
+          "Máte schválenie pre Keramický klub.";
+
+
+        clubLockMessage.style.display =
+          "none";
+
+
+        clubBookingContent.style.display =
+          "block";
+
+      }
+
+    }
+
+
+    document
+      .getElementById(
+        "loginButton"
+      )
+      .addEventListener(
+        "click",
+        function() {
+
+          loginForm.classList.toggle(
+            "show"
+          );
+
+          registerForm.classList.remove(
+            "show"
+          );
+
+        }
+      );
+
+
+    document
+      .getElementById(
+        "registerButton"
+      )
+      .addEventListener(
+        "click",
+        function() {
+
+          registerForm.classList.toggle(
+            "show"
+          );
+
+          loginForm.classList.remove(
+            "show"
+          );
+
+        }
+      );
+
+
+    document
+      .getElementById(
+        "doLogin"
+      )
+      .addEventListener(
+        "click",
+        async function() {
+
+          const email =
+            document
+              .getElementById(
+                "loginEmail"
+              )
+              .value
+              .trim();
+
+
+          const password =
+            document
+              .getElementById(
+                "loginPassword"
+              )
+              .value;
+
+
+          const message =
+            document
+              .getElementById(
+                "loginMessage"
+              );
+
+
+          message.textContent =
+            "";
+
+
+          const {
+            error
+          } =
+            await supabaseClient.auth
+              .signInWithPassword({
+
+                email,
+                password
+
+              });
+
+
+          if (error) {
+
+            message.textContent =
+              "Prihlásenie sa nepodarilo: " +
+              error.message;
+
+            return;
+
+          }
+
+
+          loginForm.classList.remove(
+            "show"
+          );
+
+
+          await updateAuthState();
+
+        }
+      );
+
+
+    document
+      .getElementById(
+        "doRegister"
+      )
+      .addEventListener(
+        "click",
+        async function() {
+
+          const name =
+            document
+              .getElementById(
+                "registerName"
+              )
+              .value
+              .trim();
+
+
+          const email =
+            document
+              .getElementById(
+                "registerEmail"
+              )
+              .value
+              .trim();
+
+
+          const password =
+            document
+              .getElementById(
+                "registerPassword"
+              )
+              .value;
+
+
+          const message =
+            document
+              .getElementById(
+                "registerMessage"
+              );
+
+
+          message.textContent =
+            "";
+
+
+          if (
+            !name ||
+            !email ||
+            !password
+          ) {
+
+            message.textContent =
+              "Vyplňte meno, e-mail a heslo.";
+
+            return;
+
+          }
+
+
+          const {
+            data,
+            error
+          } =
+            await supabaseClient.auth
+              .signUp({
+
+                email,
+
+                password,
+
+                options: {
+
+                  data: {
+                    full_name: name
+                  }
+
+                }
+
+              });
+
+
+          if (error) {
+
+            message.textContent =
+              "Vytvorenie účtu sa nepodarilo: " +
+              error.message;
+
+            return;
+
+          }
+
+
+          if (data.session) {
+
+            registerForm.classList.remove(
+              "show"
+            );
+
+            await updateAuthState();
+
+          } else {
+
+            message.textContent =
+              "Účet bol vytvorený. Skontrolujte svoj e-mail a potvrďte registráciu.";
+
+          }
+
+        }
+      );
+
+
+    document
+      .getElementById(
+        "logoutButton"
+      )
+      .addEventListener(
+        "click",
+        async function() {
+
+          await supabaseClient.auth
+            .signOut();
+
+
+          currentUser = null;
+
+          clubMember = false;
+
+
+          await updateAuthState();
+
+        }
+      );
+
+
+    supabaseClient.auth
+      .onAuthStateChange(
+        async function() {
+
+          await updateAuthState();
+
+        }
+      );
+
+
+    /* =========================
+       OTVÁRANIE KLUBU
+    ========================= */
+
+    clubHeader.addEventListener(
+      "click",
+      function() {
+
+        const isOpen =
+          clubContent.classList.contains(
+            "show"
+          );
+
+
+        clubContent.classList.toggle(
+          "show"
+        );
+
+
+        clubArrow.textContent =
+          isOpen
+            ? "▼"
+            : "▲";
+
+      }
+    );
+
+
+    /* =========================
+       OTVÁRANIE KURZU
+    ========================= */
+
     courseHeader.addEventListener(
       "click",
       function() {
@@ -1783,6 +1677,10 @@
     );
 
 
+    /* =========================
+       VOĽNÉ MIESTA
+    ========================= */
+
     async function loadAvailability() {
 
       try {
@@ -1805,7 +1703,8 @@
 
 
         const available =
-          data.course?.available ?? 7;
+          data.course?.available ??
+          7;
 
 
         courseAvailability.textContent =
@@ -1819,6 +1718,7 @@
           courseButton.disabled =
             true;
 
+
           courseButton.textContent =
             "Kurz je plne obsadený";
 
@@ -1826,7 +1726,10 @@
 
       } catch (error) {
 
-        console.error(error);
+        console.error(
+          error
+        );
+
 
         courseAvailability.textContent =
           "Nepodarilo sa načítať voľné miesta.";
@@ -1835,6 +1738,10 @@
 
     }
 
+
+    /* =========================
+       TERMÍNY KLUBU
+    ========================= */
 
     function renderTerms() {
 
@@ -1884,17 +1791,20 @@
                   Vyberte začiatok a koniec:
                 </strong>
 
+
                 <div class="time-row">
 
                   <label>
                     Od:
                   </label>
 
+
                   <select id="startSelect">
 
                     <option value="">
                       Vyberte čas
                     </option>
+
 
                     ${HOURS.map(
                       hour => {
@@ -1905,7 +1815,8 @@
                               term
                             ]?.[
                               hour
-                            ] ?? 0;
+                            ] ??
+                          0;
 
 
                         const free =
@@ -1947,11 +1858,13 @@
                     Do:
                   </label>
 
+
                   <select id="endSelect">
 
                     <option value="">
                       Vyberte čas
                     </option>
+
 
                     ${[
                       "15:00",
@@ -1979,8 +1892,11 @@
                   ${
                     selectedStart &&
                     selectedEnd
+
                       ? `Vybraný čas: ${selectedStart} – ${selectedEnd}`
+
                       : "Najprv vyberte začiatok a potom koniec."
+
                   }
 
                 </div>
@@ -1998,9 +1914,13 @@
               ${term}
             </strong>
 
+
             <div class="availability">
+
               Kliknite pre výber času.
+
             </div>
+
 
             ${timeHTML}
 
@@ -2012,8 +1932,8 @@
             function(event) {
 
               if (
-                event.target.tagName ===
-                "SELECT"
+                !currentUser ||
+                !clubMember
               ) {
 
                 return;
@@ -2022,8 +1942,8 @@
 
 
               if (
-                !currentUser ||
-                !clubMember
+                event.target.tagName ===
+                "SELECT"
               ) {
 
                 return;
@@ -2165,6 +2085,10 @@
     }
 
 
+    /* =========================
+       KONIEC ČASU
+    ========================= */
+
     function updateEndOptions(
       endSelect
     ) {
@@ -2183,7 +2107,9 @@
       ).forEach(
         option => {
 
-          if (!option.value) {
+          if (
+            !option.value
+          ) {
 
             return;
 
@@ -2208,6 +2134,10 @@
 
     }
 
+
+    /* =========================
+       KURZ
+    ========================= */
 
     courseButton.addEventListener(
       "click",
@@ -2254,12 +2184,19 @@
             "reservationForm"
           )
           .scrollIntoView({
-            behavior: "smooth"
+
+            behavior:
+              "smooth"
+
           });
 
       }
     );
 
+
+    /* =========================
+       FORMULÁR
+    ========================= */
 
     document
       .getElementById(
@@ -2294,7 +2231,9 @@
             "";
 
 
-          if (!gdpr.checked) {
+          if (
+            !gdpr.checked
+          ) {
 
             message.textContent =
               "Pre odoslanie je potrebné súhlasiť so spracovaním osobných údajov.";
@@ -2305,7 +2244,8 @@
 
 
           if (
-            selectedType === "club"
+            selectedType ===
+            "club"
           ) {
 
             if (
@@ -2314,14 +2254,16 @@
             ) {
 
               message.textContent =
-                "Pre rezerváciu Keramického klubu sa musíte prihlásiť alebo vytvoriť účet a počkať na schválenie.";
+                "Pre rezerváciu Keramického klubu sa musíte prihlásiť a mať schválený účet.";
 
               return;
 
             }
 
 
-            if (!selectedDate) {
+            if (
+              !selectedDate
+            ) {
 
               message.textContent =
                 "Vyberte termín.";
@@ -2347,8 +2289,10 @@
 
 
           if (
-            selectedType !== "club" &&
-            selectedType !== "course"
+            selectedType !==
+              "club" &&
+            selectedType !==
+              "course"
           ) {
 
             message.textContent =
@@ -2361,24 +2305,31 @@
 
           const name =
             document
-              .getElementById("name")
+              .getElementById(
+                "name"
+              )
               .value;
 
 
           const phone =
             document
-              .getElementById("phone")
+              .getElementById(
+                "phone"
+              )
               .value;
 
 
           const email =
             document
-              .getElementById("email")
+              .getElementById(
+                "email"
+              )
               .value;
 
 
           submitButton.disabled =
             true;
+
 
           submitButton.textContent =
             "Odosielam...";
@@ -2386,29 +2337,19 @@
 
           try {
 
-            const sessionResult =
-              await supabaseClient.auth
+            const {
+              data: sessionData
+            } =
+              await supabaseClient
+                .auth
                 .getSession();
 
 
-            const session =
-              sessionResult.data.session;
-
-
-            const headers = {
-
-              "Content-Type":
-                "application/json"
-
-            };
-
-
-            if (session) {
-
-              headers.Authorization =
-                `Bearer ${session.access_token}`;
-
-            }
+            const accessToken =
+              sessionData
+                ?.session
+                ?.access_token ||
+              "";
 
 
             const response =
@@ -2416,9 +2357,25 @@
                 "/api/reservations",
                 {
 
-                  method: "POST",
+                  method:
+                    "POST",
 
-                  headers,
+
+                  headers: {
+
+                    "Content-Type":
+                      "application/json",
+
+
+                    ...(accessToken
+                      ? {
+                          Authorization:
+                            `Bearer ${accessToken}`
+                        }
+                      : {})
+
+                  },
+
 
                   body:
                     JSON.stringify({
@@ -2426,17 +2383,23 @@
                       type:
                         selectedType,
 
+
                       name,
+
 
                       phone,
 
+
                       email,
+
 
                       date:
                         selectedDate,
 
+
                       start_time:
                         selectedStart,
+
 
                       end_time:
                         selectedEnd
@@ -2451,11 +2414,15 @@
               await response.json();
 
 
-            if (!response.ok) {
+            if (
+              !response.ok
+            ) {
 
               throw new Error(
+
                 data.error ||
                 "Registrácia sa nepodarila."
+
               );
 
             }
@@ -2476,11 +2443,14 @@
             selectedType =
               "";
 
+
             selectedDate =
               "";
 
+
             selectedStart =
               "";
+
 
             selectedEnd =
               "";
@@ -2489,11 +2459,14 @@
             typeInput.value =
               "";
 
+
             dateInput.value =
               "";
 
+
             startInput.value =
               "";
+
 
             endInput.value =
               "";
@@ -2501,10 +2474,13 @@
 
             renderTerms();
 
+
             await loadAvailability();
 
 
-          } catch (error) {
+          } catch (
+            error
+          ) {
 
             message.textContent =
               error.message;
@@ -2515,6 +2491,7 @@
           submitButton.disabled =
             false;
 
+
           submitButton.textContent =
             "Odoslať rezerváciu";
 
@@ -2522,7 +2499,11 @@
       );
 
 
-    loadAuthState();
+    /* =========================
+       ŠTART
+    ========================= */
+
+    updateAuthState();
 
     loadAvailability();
 
