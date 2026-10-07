@@ -95,6 +95,21 @@ async function getReservations() {
    ROZPOZNANIE REZERVÁCIE KERAMICKÉHO KLUBU
    ========================================================= */
 
+function getClubTermLabel(dateValue) {
+
+  if (CLUB_TERMS.includes(dateValue)) {
+    return dateValue;
+  }
+
+  return (
+    CLUB_TERMS.find(
+      term => CLUB_TERM_DATES[term] === dateValue
+    ) || null
+  );
+
+}
+
+
 function isClubReservation(item) {
 
   /*
@@ -110,7 +125,7 @@ function isClubReservation(item) {
 
   if (
     !item.type &&
-    CLUB_TERMS.includes(item.date) &&
+    getClubTermLabel(item.date) &&
     item.start_time &&
     item.end_time
   ) {
@@ -462,7 +477,11 @@ export default async function handler(
         .forEach(
           item => {
 
-            if (!club[item.date]) {
+            const termLabel =
+              getClubTermLabel(item.date);
+
+
+            if (!termLabel) {
               return;
             }
 
@@ -508,11 +527,11 @@ export default async function handler(
 
 
               if (
-                club[item.date][hourText] !==
+                club[termLabel][hourText] !==
                 undefined
               ) {
 
-                club[item.date][hourText]++;
+                club[termLabel][hourText]++;
 
               }
 
@@ -1124,34 +1143,8 @@ export default async function handler(
          * -----------------------------------------------
          */
 
-        /*
-         * -----------------------------------------------
-         * 4. KONTROLA A NORMALIZÁCIA TERMÍNU
-         * -----------------------------------------------
-         *
-         * Frontend môže poslať:
-         * 15. október
-         * alebo:
-         * 2026-10-15
-         *
-         * API prijíma oba formáty.
-         */
-
-        let clubTermLabel = null;
-
-        if (CLUB_TERMS.includes(date)) {
-
-          clubTermLabel = date;
-
-        } else {
-
-          clubTermLabel =
-            CLUB_TERMS.find(
-              term =>
-                CLUB_TERM_DATES[term] === date
-            ) || null;
-
-        }
+        const clubTermLabel =
+          getClubTermLabel(date);
 
 
         if (!clubTermLabel) {
@@ -1164,6 +1157,10 @@ export default async function handler(
           });
 
         }
+
+
+        const clubDateIso =
+          CLUB_TERM_DATES[clubTermLabel];
 
 
         /*
@@ -1270,33 +1267,14 @@ export default async function handler(
           reservations.filter(
             item => {
 
-              if (
-                !isClubReservation(item)
-              ) {
-
+              if (!isClubReservation(item)) {
                 return false;
-
               }
-
-
-              if (
-                item.date === date
-              ) {
-
-                return true;
-
-              }
-
-
-              const itemTermLabel =
-                CLUB_TERMS.find(
-                  term =>
-                    CLUB_TERM_DATES[term] === item.date
-                );
 
 
               return (
-                itemTermLabel === clubTermLabel
+                getClubTermLabel(item.date) ===
+                clubTermLabel
               );
 
             }
@@ -1437,7 +1415,8 @@ export default async function handler(
 
                 email,
 
-                date,
+                date:
+                  clubDateIso,
 
                 start_time,
 
@@ -1518,7 +1497,7 @@ export default async function handler(
 
             <p>
               <strong>Termín:</strong>
-              ${date}
+              ${clubTermLabel}
             </p>
 
             <p>
@@ -1583,7 +1562,7 @@ export default async function handler(
 
               <p>
                 <strong>Termín:</strong>
-                ${date}
+                ${clubTermLabel}
               </p>
 
               <p>
@@ -1778,4 +1757,3 @@ export default async function handler(
   });
 
 }
-```
