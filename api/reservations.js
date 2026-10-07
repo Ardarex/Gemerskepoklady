@@ -58,12 +58,16 @@ async function getReservations() {
 
   const response =
     await fetch(
-      `${SUPABASE_URL}/rest/v1/reservations?select=*`,
+      `${SUPABASE_URL}/rest/v1/reservations?select=id,name,phone,email,date,created_at,start_time,end_time,type,course_place,user_id`,
       {
+        method: "GET",
+
         headers: {
           apikey: SUPABASE_KEY,
           Authorization:
-            `Bearer ${SUPABASE_KEY}`
+            `Bearer ${SUPABASE_KEY}`,
+          Accept:
+            "application/json"
         }
       }
     );
@@ -76,17 +80,31 @@ async function getReservations() {
 
     console.error(
       "Supabase reservations error:",
+      response.status,
       text
     );
 
     throw new Error(
-      "Nepodarilo sa načítať rezervácie."
+      `Supabase chyba ${response.status}: ${text}`
     );
 
   }
 
 
-  return await response.json();
+  const data =
+    await response.json();
+
+
+  if (!Array.isArray(data)) {
+
+    throw new Error(
+      "Supabase nevrátil zoznam rezervácií."
+    );
+
+  }
+
+
+  return data;
 
 }
 
@@ -151,13 +169,6 @@ async function getAuthenticatedUser(
   }
 
 
-  /*
-   * Token overujeme priamo cez Supabase Auth.
-   *
-   * Nepoužívame údaje z prehliadača ako dôkaz,
-   * ale overujeme token na Supabase serveri.
-   */
-
   const response =
     await fetch(
       `${SUPABASE_URL}/auth/v1/user`,
@@ -208,10 +219,6 @@ async function getClubMemberStatus(
   userId,
   accessToken
 ) {
-
-  /*
-   * Čítame profil konkrétneho používateľa.
-   */
 
   const response =
     await fetch(
@@ -329,13 +336,6 @@ function isClubDateAvailable(
     getTodayBratislava();
 
 
-  /*
-   * Termín je dostupný celý deň,
-   * ak je dnes presne jeho dátum.
-   *
-   * Od ďalšieho dňa už nie.
-   */
-
   return termDate >= today;
 
 }
@@ -352,7 +352,9 @@ async function sendEmail(
 ) {
 
   if (!RESEND_API_KEY) {
-    throw new Error("RESEND_API_KEY nie je nastavený vo Verceli.");
+    throw new Error(
+      "RESEND_API_KEY nie je nastavený vo Verceli."
+    );
   }
 
 
@@ -397,7 +399,9 @@ async function sendEmail(
       text
     );
 
-    throw new Error(`Resend chyba: ${text}`);
+    throw new Error(
+      `Resend chyba: ${text}`
+    );
 
   }
 
@@ -407,20 +411,13 @@ async function sendEmail(
 
 
 /* =========================================================
-   GET
-   NAČÍTANIE DOSTUPNOSTI
+   GET – NAČÍTANIE DOSTUPNOSTI
    ========================================================= */
 
 export default async function handler(
   req,
   res
 ) {
-
-  /*
-   * =======================================================
-   * GET
-   * =======================================================
-   */
 
   if (req.method === "GET") {
 
@@ -452,12 +449,15 @@ export default async function handler(
 
 
       /*
-       * Spočítame obsadenosť jednotlivých hodín.
+       * SPOČÍTANIE OBSADENOSTI KLUBU
        */
 
       reservations
 
-        .filter(item => isClubReservation(item))
+        .filter(
+          item =>
+            isClubReservation(item)
+        )
 
         .forEach(
           item => {
@@ -523,7 +523,7 @@ export default async function handler(
 
 
       /*
-       * Spočítame počet prihlásených na kurz.
+       * SPOČÍTANIE KURZU
        */
 
       const courseReservations =
@@ -570,11 +570,9 @@ export default async function handler(
   }
 
 
-  /*
-   * =======================================================
-   * POST
-   * =======================================================
-   */
+  /* =======================================================
+     POST
+     ======================================================= */
 
   if (req.method === "POST") {
 
@@ -583,27 +581,19 @@ export default async function handler(
       const {
 
         type,
-
         name,
-
         phone,
-
         email,
-
         date,
-
         start_time,
-
         end_time
 
       } = req.body || {};
 
 
-      /*
-       * ===================================================
-       * ZÁKLADNÁ KONTROLA ÚDAJOV
-       * ===================================================
-       */
+      /* ===================================================
+         ZÁKLADNÁ KONTROLA
+         =================================================== */
 
       if (
         !name ||
@@ -621,14 +611,9 @@ export default async function handler(
       }
 
 
-      /*
-       * ===================================================
-       * KERAMICKÝ KURZ
-       *
-       * Kurz zostáva verejný.
-       * Prihlásenie nie je potrebné.
-       * ===================================================
-       */
+      /* ===================================================
+         KERAMICKÝ KURZ
+         =================================================== */
 
       if (type === "course") {
 
@@ -642,10 +627,6 @@ export default async function handler(
               item.type === "course"
           );
 
-
-        /*
-         * MAXIMÁLNE 7 ĽUDÍ
-         */
 
         if (
           courseReservations.length >= 7
@@ -664,10 +645,6 @@ export default async function handler(
         const place =
           courseReservations.length + 1;
 
-
-        /*
-         * ULOŽENIE REZERVÁCIE
-         */
 
         const insertResponse =
           await fetch(
@@ -743,9 +720,7 @@ export default async function handler(
         }
 
 
-        /*
-         * EMAIL ORGANIZÁTOROVI
-         */
+        /* EMAIL ORGANIZÁTOROVI */
 
         await sendEmail(
 
@@ -817,9 +792,7 @@ export default async function handler(
         );
 
 
-        /*
-         * POTVRDZOVACÍ EMAIL ÚČASTNÍKOVI
-         */
+        /* EMAIL ÚČASTNÍKOVI */
 
         await sendEmail(
 
@@ -845,7 +818,6 @@ export default async function handler(
               Tešíme sa, že sa spolu stretneme pri tvorení
               a objavovaní sveta keramickej tvorby.
             </p>
-
 
             <div style="
               background:#f7eee7;
@@ -887,7 +859,6 @@ export default async function handler(
 
             </div>
 
-
             <p>
               Počas kurzu sa pod vedením lektorky
               Renáty Kseničovej naučíte základné techniky
@@ -906,11 +877,9 @@ export default async function handler(
               počas roka – napríklad jeseň či Vianoce.
             </p>
 
-
             <h3 style="color:#352c27;">
               Cena kurzu: 170 €
             </h3>
-
 
             <p>
               <strong>Cena zahŕňa:</strong>
@@ -924,7 +893,6 @@ export default async function handler(
               <li>malé občerstvenie,</li>
               <li>certifikát o absolvovaní kurzu.</li>
             </ul>
-
 
             <h3 style="color:#352c27;">
               Úhrada poplatku
@@ -955,7 +923,6 @@ export default async function handler(
               </li>
             </ul>
 
-
             <h3 style="color:#352c27;">
               Zrušenie rezervácie
             </h3>
@@ -981,156 +948,6 @@ export default async function handler(
             <h3>
               Tešíme sa na spoločné tvorenie! 👐🏻🏺
             </h3>
-
-
-            <p style="
-              color:#8a786b;
-              font-size:13px;
-              margin-top:25px;
-            ">
-              Ak potvrdzovací e-mail nevidíte,
-              skontrolujte aj priečinok Spam
-              alebo Nevyžiadaná pošta.
-            </p>
-
-          </div>
-          `
-
-        );            <div style="
-              background:#f7eee7;
-              padding:18px;
-              border-radius:12px;
-              margin:20px 0;
-            ">
-
-              <p>
-                <strong>Termín kurzu:</strong>
-                13. 10. 2026 – 1. 12. 2026
-              </p>
-
-              <p>
-                <strong>Počet lekcií:</strong>
-                8
-              </p>
-
-              <p>
-                <strong>Celkový rozsah:</strong>
-                24 hodín
-              </p>
-
-              <p>
-                <strong>Deň a čas:</strong>
-                každý utorok od 16:00 do 19:00
-              </p>
-
-              <p>
-                <strong>Miesto:</strong>
-                Dom tradičnej kultúry Gemera,
-                Betliarska 8, Rožňava
-              </p>
-
-              <p>
-                <strong>Vaše miesto:</strong>
-                ${place}/7
-              </p>
-
-            </div>
-
-
-            <p>
-              Počas kurzu sa pod vedením lektorky
-              Renáty Kseničovej naučíte základné techniky
-              modelovania z hrnčiarskej hliny, dekorovania,
-              glazovania a postupy finálneho výpalu.
-            </p>
-
-            <p>
-              Postupne si vytvoríte rôzne dekoračné aj
-              úžitkové predmety a zároveň budete mať priestor
-              objavovať vlastnú tvorivosť.
-            </p>
-
-            <p>
-              Inšpiráciou nám budú aj rôzne tematické obdobia
-              počas roka – napríklad jeseň či Vianoce.
-            </p>
-
-
-            <h3 style="color:#352c27;">
-              Cena kurzu: 170 €
-            </h3>
-
-
-            <p>
-              <strong>Cena zahŕňa:</strong>
-            </p>
-
-            <ul>
-              <li>materiál,</li>
-              <li>pracovné pomôcky,</li>
-              <li>uskladnenie výrobkov počas sušenia,</li>
-              <li>2× výpal v elektrickej peci,</li>
-              <li>malé občerstvenie,</li>
-              <li>certifikát o absolvovaní kurzu.</li>
-            </ul>
-
-
-            <h3 style="color:#352c27;">
-              Úhrada poplatku
-            </h3>
-
-            <p>
-              Rezervácia je záväzná.
-              Poplatok je potrebné uhradiť
-              najneskôr 3 dni pred začiatkom kurzu.
-            </p>
-
-            <p>
-              Platbu môžete uhradiť:
-            </p>
-
-            <ul>
-              <li>v hotovosti na mieste,</li>
-
-              <li>
-                platobnou kartou na mieste,
-              </li>
-
-              <li>
-                bankovým prevodom na účet
-                <strong>
-                  SK31 8180 0000 0070 0046 1781
-                </strong>
-              </li>
-            </ul>
-
-
-            <h3 style="color:#352c27;">
-              Zrušenie rezervácie
-            </h3>
-
-            <p>
-              Ak sa kurzu nebudete môcť zúčastniť,
-              prosíme vás o včasné zrušenie rezervácie
-              telefonicky na čísle
-              <strong>0917 419 259</strong>
-              alebo e-mailom na adrese
-              <strong>renata.ksenicova@gos.sk</strong>.
-            </p>
-
-            <p>
-              Uvoľnené miesto tak môžeme ponúknuť
-              ďalším záujemcom.
-            </p>
-
-            <p>
-              Ďakujeme za pochopenie.
-            </p>
-
-            <h3>
-              Tešíme sa na spoločné tvorenie! 👐🏻🏺
-            </h3>
-
 
             <p style="
               color:#8a786b;
@@ -1161,19 +978,11 @@ export default async function handler(
       }
 
 
-      /*
-       * ===================================================
-       * KERAMICKÝ KLUB
-       * ===================================================
-       */
+      /* ===================================================
+         KERAMICKÝ KLUB
+         =================================================== */
 
       if (type === "club") {
-
-        /*
-         * -----------------------------------------------
-         * 1. MUSÍ BYŤ PRIHLÁSENÝ
-         * -----------------------------------------------
-         */
 
         const auth =
           await getAuthenticatedUser(
@@ -1200,12 +1009,6 @@ export default async function handler(
         const accessToken =
           auth.accessToken;
 
-
-        /*
-         * -----------------------------------------------
-         * 2. MUSÍ MAŤ SCHVÁLENIE club_member
-         * -----------------------------------------------
-         */
 
         let isClubMember;
 
@@ -1245,12 +1048,6 @@ export default async function handler(
         }
 
 
-        /*
-         * -----------------------------------------------
-         * 3. KONTROLA ÚDAJOV
-         * -----------------------------------------------
-         */
-
         if (
           !date ||
           !start_time ||
@@ -1267,12 +1064,6 @@ export default async function handler(
         }
 
 
-        /*
-         * -----------------------------------------------
-         * 4. KONTROLA TERMÍNU
-         * -----------------------------------------------
-         */
-
         if (
           !CLUB_TERMS.includes(date)
         ) {
@@ -1287,12 +1078,6 @@ export default async function handler(
         }
 
 
-        /*
-         * -----------------------------------------------
-         * 5. MINULÉ TERMÍNY
-         * -----------------------------------------------
-         */
-
         if (
           !isClubDateAvailable(date)
         ) {
@@ -1306,12 +1091,6 @@ export default async function handler(
 
         }
 
-
-        /*
-         * -----------------------------------------------
-         * 6. KONTROLA ČASU
-         * -----------------------------------------------
-         */
 
         if (
           !CLUB_START_TIMES.includes(
@@ -1377,12 +1156,6 @@ export default async function handler(
         }
 
 
-        /*
-         * -----------------------------------------------
-         * 7. NAČÍTANIE EXISTUJÚCICH REZERVÁCIÍ
-         * -----------------------------------------------
-         */
-
         const reservations =
           await getReservations();
 
@@ -1394,12 +1167,6 @@ export default async function handler(
               item.date === date
           );
 
-
-        /*
-         * -----------------------------------------------
-         * 8. KONTROLA 10 ĽUDÍ NA KAŽDÚ HODINU
-         * -----------------------------------------------
-         */
 
         for (
           let hour = startHour;
@@ -1454,11 +1221,6 @@ export default async function handler(
                 );
 
 
-              /*
-               * Rezervácia zaberá všetky hodiny,
-               * cez ktoré prechádza.
-               */
-
               if (
                 existingStart <= hour &&
                 existingEnd > hour
@@ -1487,14 +1249,6 @@ export default async function handler(
 
         }
 
-
-        /*
-         * -----------------------------------------------
-         * 9. ULOŽENIE REZERVÁCIE
-         * -----------------------------------------------
-         *
-         * user_id je ID prihláseného používateľa.
-         */
 
         const insertResponse =
           await fetch(
@@ -1568,12 +1322,6 @@ export default async function handler(
         }
 
 
-        /*
-         * -----------------------------------------------
-         * 10. EMAIL ORGANIZÁTOROVI
-         * -----------------------------------------------
-         */
-
         await sendEmail(
 
           "renata.ksenicova@gos.sk",
@@ -1634,12 +1382,6 @@ export default async function handler(
         );
 
 
-        /*
-         * -----------------------------------------------
-         * 11. POTVRDZOVACÍ EMAIL ÚČASTNÍKOVI
-         * -----------------------------------------------
-         */
-
         await sendEmail(
 
           email,
@@ -1665,7 +1407,6 @@ export default async function handler(
               Tešíme sa na spoločné tvorenie!
             </p>
 
-
             <div style="
               background:#f7eee7;
               padding:18px;
@@ -1690,13 +1431,11 @@ export default async function handler(
 
             </div>
 
-
             <p>
               Vaša rezervácia zahŕňa 1 miesto
               na tvorenie v keramickom klube vrátane
               všetkého potrebného materiálu a pomôcok.
             </p>
-
 
             <p>
               Počas celej dielne bude prítomný lektor,
@@ -1705,12 +1444,10 @@ export default async function handler(
               alebo pomôže, ak to budete potrebovať.
             </p>
 
-
             <p>
               Počas vašej návštevy si môžete vychutnať
               kávu, čaj alebo malé občerstvenie.
             </p>
-
 
             <h3 style="color:#352c27;">
               Praktické informácie
@@ -1723,7 +1460,6 @@ export default async function handler(
               pohodlne usadiť a pripraviť na tvorenie.
             </p>
 
-
             <p>
               Ak si želáte tvoriť dlhšie,
               je potrebné rezervovať si ďalší časový slot.
@@ -1731,7 +1467,6 @@ export default async function handler(
               rezervácie, aby sme mohli pripraviť priestor
               pre ďalších účastníkov.
             </p>
-
 
             <h3 style="color:#352c27;">
               Cena
@@ -1743,7 +1478,6 @@ export default async function handler(
               </strong>
             </p>
 
-
             <h3 style="color:#352c27;">
               Platba
             </h3>
@@ -1752,7 +1486,6 @@ export default async function handler(
               Platba prebieha na mieste
               v hotovosti alebo platobnou kartou.
             </p>
-
 
             <h3 style="color:#352c27;">
               Zrušenie rezervácie
@@ -1773,19 +1506,16 @@ export default async function handler(
               ďalším záujemcom.
             </p>
 
-
             <p>
               Ďakujeme za pochopenie
               a tešíme sa na vás! 👐🏻🏺
             </p>
-
 
             <p>
               <strong>
                 Tím Keramického klubu
               </strong>
             </p>
-
 
             <p style="
               color:#8a786b;
@@ -1803,12 +1533,6 @@ export default async function handler(
         );
 
 
-        /*
-         * -----------------------------------------------
-         * 12. ÚSPECH
-         * -----------------------------------------------
-         */
-
         return res.status(200).json({
 
           success:
@@ -1821,12 +1545,6 @@ export default async function handler(
 
       }
 
-
-      /*
-       * ===================================================
-       * NEZNÁMY TYP
-       * ===================================================
-       */
 
       return res.status(400).json({
 
@@ -1855,12 +1573,6 @@ export default async function handler(
 
   }
 
-
-  /*
-   * =======================================================
-   * OSTATNÉ HTTP METÓDY
-   * =======================================================
-   */
 
   return res.status(405).json({
 
