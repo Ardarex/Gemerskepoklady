@@ -58,16 +58,12 @@ async function getReservations() {
 
   const response =
     await fetch(
-      `${SUPABASE_URL}/rest/v1/reservations?select=id,name,phone,email,date,created_at,start_time,end_time,type,course_place,user_id`,
+      `${SUPABASE_URL}/rest/v1/reservations?select=*`,
       {
-        method: "GET",
-
         headers: {
           apikey: SUPABASE_KEY,
           Authorization:
-            `Bearer ${SUPABASE_KEY}`,
-          Accept:
-            "application/json"
+            `Bearer ${SUPABASE_KEY}`
         }
       }
     );
@@ -80,31 +76,17 @@ async function getReservations() {
 
     console.error(
       "Supabase reservations error:",
-      response.status,
       text
     );
 
     throw new Error(
-      `Supabase chyba ${response.status}: ${text}`
+      "Nepodarilo sa načítať rezervácie."
     );
 
   }
 
 
-  const data =
-    await response.json();
-
-
-  if (!Array.isArray(data)) {
-
-    throw new Error(
-      "Supabase nevrátil zoznam rezervácií."
-    );
-
-  }
-
-
-  return data;
+  return await response.json();
 
 }
 
@@ -169,6 +151,13 @@ async function getAuthenticatedUser(
   }
 
 
+  /*
+   * Token overujeme priamo cez Supabase Auth.
+   *
+   * Nepoužívame údaje z prehliadača ako dôkaz,
+   * ale overujeme token na Supabase serveri.
+   */
+
   const response =
     await fetch(
       `${SUPABASE_URL}/auth/v1/user`,
@@ -219,6 +208,10 @@ async function getClubMemberStatus(
   userId,
   accessToken
 ) {
+
+  /*
+   * Čítame profil konkrétneho používateľa.
+   */
 
   const response =
     await fetch(
@@ -336,6 +329,13 @@ function isClubDateAvailable(
     getTodayBratislava();
 
 
+  /*
+   * Termín je dostupný celý deň,
+   * ak je dnes presne jeho dátum.
+   *
+   * Od ďalšieho dňa už nie.
+   */
+
   return termDate >= today;
 
 }
@@ -352,9 +352,7 @@ async function sendEmail(
 ) {
 
   if (!RESEND_API_KEY) {
-    throw new Error(
-      "RESEND_API_KEY nie je nastavený vo Verceli."
-    );
+    throw new Error("RESEND_API_KEY nie je nastavený vo Verceli.");
   }
 
 
@@ -399,9 +397,7 @@ async function sendEmail(
       text
     );
 
-    throw new Error(
-      `Resend chyba: ${text}`
-    );
+    throw new Error(`Resend chyba: ${text}`);
 
   }
 
@@ -411,13 +407,20 @@ async function sendEmail(
 
 
 /* =========================================================
-   GET – NAČÍTANIE DOSTUPNOSTI
+   GET
+   NAČÍTANIE DOSTUPNOSTI
    ========================================================= */
 
 export default async function handler(
   req,
   res
 ) {
+
+  /*
+   * =======================================================
+   * GET
+   * =======================================================
+   */
 
   if (req.method === "GET") {
 
@@ -449,15 +452,12 @@ export default async function handler(
 
 
       /*
-       * SPOČÍTANIE OBSADENOSTI KLUBU
+       * Spočítame obsadenosť jednotlivých hodín.
        */
 
       reservations
 
-        .filter(
-          item =>
-            isClubReservation(item)
-        )
+        .filter(item => isClubReservation(item))
 
         .forEach(
           item => {
@@ -523,7 +523,7 @@ export default async function handler(
 
 
       /*
-       * SPOČÍTANIE KURZU
+       * Spočítame počet prihlásených na kurz.
        */
 
       const courseReservations =
@@ -570,9 +570,11 @@ export default async function handler(
   }
 
 
-  /* =======================================================
-     POST
-     ======================================================= */
+  /*
+   * =======================================================
+   * POST
+   * =======================================================
+   */
 
   if (req.method === "POST") {
 
@@ -581,19 +583,27 @@ export default async function handler(
       const {
 
         type,
+
         name,
+
         phone,
+
         email,
+
         date,
+
         start_time,
+
         end_time
 
       } = req.body || {};
 
 
-      /* ===================================================
-         ZÁKLADNÁ KONTROLA
-         =================================================== */
+      /*
+       * ===================================================
+       * ZÁKLADNÁ KONTROLA ÚDAJOV
+       * ===================================================
+       */
 
       if (
         !name ||
@@ -611,9 +621,14 @@ export default async function handler(
       }
 
 
-      /* ===================================================
-         KERAMICKÝ KURZ
-         =================================================== */
+      /*
+       * ===================================================
+       * KERAMICKÝ KURZ
+       *
+       * Kurz zostáva verejný.
+       * Prihlásenie nie je potrebné.
+       * ===================================================
+       */
 
       if (type === "course") {
 
@@ -627,6 +642,10 @@ export default async function handler(
               item.type === "course"
           );
 
+
+        /*
+         * MAXIMÁLNE 7 ĽUDÍ
+         */
 
         if (
           courseReservations.length >= 7
@@ -645,6 +664,10 @@ export default async function handler(
         const place =
           courseReservations.length + 1;
 
+
+        /*
+         * ULOŽENIE REZERVÁCIE
+         */
 
         const insertResponse =
           await fetch(
@@ -720,7 +743,9 @@ export default async function handler(
         }
 
 
-        /* EMAIL ORGANIZÁTOROVI */
+        /*
+         * EMAIL ORGANIZÁTOROVI
+         */
 
         await sendEmail(
 
@@ -792,7 +817,9 @@ export default async function handler(
         );
 
 
-        /* EMAIL ÚČASTNÍKOVI */
+        /*
+         * POTVRDZOVACÍ EMAIL ÚČASTNÍKOVI
+         */
 
         await sendEmail(
 
@@ -818,6 +845,7 @@ export default async function handler(
               Tešíme sa, že sa spolu stretneme pri tvorení
               a objavovaní sveta keramickej tvorby.
             </p>
+
 
             <div style="
               background:#f7eee7;
@@ -859,6 +887,7 @@ export default async function handler(
 
             </div>
 
+
             <p>
               Počas kurzu sa pod vedením lektorky
               Renáty Kseničovej naučíte základné techniky
@@ -877,9 +906,11 @@ export default async function handler(
               počas roka – napríklad jeseň či Vianoce.
             </p>
 
+
             <h3 style="color:#352c27;">
               Cena kurzu: 170 €
             </h3>
+
 
             <p>
               <strong>Cena zahŕňa:</strong>
@@ -893,6 +924,7 @@ export default async function handler(
               <li>malé občerstvenie,</li>
               <li>certifikát o absolvovaní kurzu.</li>
             </ul>
+
 
             <h3 style="color:#352c27;">
               Úhrada poplatku
@@ -923,6 +955,7 @@ export default async function handler(
               </li>
             </ul>
 
+
             <h3 style="color:#352c27;">
               Zrušenie rezervácie
             </h3>
@@ -948,6 +981,7 @@ export default async function handler(
             <h3>
               Tešíme sa na spoločné tvorenie! 👐🏻🏺
             </h3>
+
 
             <p style="
               color:#8a786b;
@@ -978,11 +1012,19 @@ export default async function handler(
       }
 
 
-      /* ===================================================
-         KERAMICKÝ KLUB
-         =================================================== */
+      /*
+       * ===================================================
+       * KERAMICKÝ KLUB
+       * ===================================================
+       */
 
       if (type === "club") {
+
+        /*
+         * -----------------------------------------------
+         * 1. MUSÍ BYŤ PRIHLÁSENÝ
+         * -----------------------------------------------
+         */
 
         const auth =
           await getAuthenticatedUser(
@@ -1009,6 +1051,12 @@ export default async function handler(
         const accessToken =
           auth.accessToken;
 
+
+        /*
+         * -----------------------------------------------
+         * 2. MUSÍ MAŤ SCHVÁLENIE club_member
+         * -----------------------------------------------
+         */
 
         let isClubMember;
 
@@ -1048,6 +1096,12 @@ export default async function handler(
         }
 
 
+        /*
+         * -----------------------------------------------
+         * 3. KONTROLA ÚDAJOV
+         * -----------------------------------------------
+         */
+
         if (
           !date ||
           !start_time ||
@@ -1064,6 +1118,12 @@ export default async function handler(
         }
 
 
+        /*
+         * -----------------------------------------------
+         * 4. KONTROLA TERMÍNU
+         * -----------------------------------------------
+         */
+
         if (
           !CLUB_TERMS.includes(date)
         ) {
@@ -1078,6 +1138,12 @@ export default async function handler(
         }
 
 
+        /*
+         * -----------------------------------------------
+         * 5. MINULÉ TERMÍNY
+         * -----------------------------------------------
+         */
+
         if (
           !isClubDateAvailable(date)
         ) {
@@ -1091,6 +1157,12 @@ export default async function handler(
 
         }
 
+
+        /*
+         * -----------------------------------------------
+         * 6. KONTROLA ČASU
+         * -----------------------------------------------
+         */
 
         if (
           !CLUB_START_TIMES.includes(
@@ -1156,6 +1228,12 @@ export default async function handler(
         }
 
 
+        /*
+         * -----------------------------------------------
+         * 7. NAČÍTANIE EXISTUJÚCICH REZERVÁCIÍ
+         * -----------------------------------------------
+         */
+
         const reservations =
           await getReservations();
 
@@ -1167,6 +1245,12 @@ export default async function handler(
               item.date === date
           );
 
+
+        /*
+         * -----------------------------------------------
+         * 8. KONTROLA 10 ĽUDÍ NA KAŽDÚ HODINU
+         * -----------------------------------------------
+         */
 
         for (
           let hour = startHour;
@@ -1221,6 +1305,11 @@ export default async function handler(
                 );
 
 
+              /*
+               * Rezervácia zaberá všetky hodiny,
+               * cez ktoré prechádza.
+               */
+
               if (
                 existingStart <= hour &&
                 existingEnd > hour
@@ -1249,6 +1338,14 @@ export default async function handler(
 
         }
 
+
+        /*
+         * -----------------------------------------------
+         * 9. ULOŽENIE REZERVÁCIE
+         * -----------------------------------------------
+         *
+         * user_id je ID prihláseného používateľa.
+         */
 
         const insertResponse =
           await fetch(
@@ -1322,6 +1419,12 @@ export default async function handler(
         }
 
 
+        /*
+         * -----------------------------------------------
+         * 10. EMAIL ORGANIZÁTOROVI
+         * -----------------------------------------------
+         */
+
         await sendEmail(
 
           "renata.ksenicova@gos.sk",
@@ -1382,6 +1485,12 @@ export default async function handler(
         );
 
 
+        /*
+         * -----------------------------------------------
+         * 11. POTVRDZOVACÍ EMAIL ÚČASTNÍKOVI
+         * -----------------------------------------------
+         */
+
         await sendEmail(
 
           email,
@@ -1407,6 +1516,7 @@ export default async function handler(
               Tešíme sa na spoločné tvorenie!
             </p>
 
+
             <div style="
               background:#f7eee7;
               padding:18px;
@@ -1431,11 +1541,13 @@ export default async function handler(
 
             </div>
 
+
             <p>
               Vaša rezervácia zahŕňa 1 miesto
               na tvorenie v keramickom klube vrátane
               všetkého potrebného materiálu a pomôcok.
             </p>
+
 
             <p>
               Počas celej dielne bude prítomný lektor,
@@ -1444,10 +1556,12 @@ export default async function handler(
               alebo pomôže, ak to budete potrebovať.
             </p>
 
+
             <p>
               Počas vašej návštevy si môžete vychutnať
               kávu, čaj alebo malé občerstvenie.
             </p>
+
 
             <h3 style="color:#352c27;">
               Praktické informácie
@@ -1460,6 +1574,7 @@ export default async function handler(
               pohodlne usadiť a pripraviť na tvorenie.
             </p>
 
+
             <p>
               Ak si želáte tvoriť dlhšie,
               je potrebné rezervovať si ďalší časový slot.
@@ -1467,6 +1582,7 @@ export default async function handler(
               rezervácie, aby sme mohli pripraviť priestor
               pre ďalších účastníkov.
             </p>
+
 
             <h3 style="color:#352c27;">
               Cena
@@ -1478,6 +1594,7 @@ export default async function handler(
               </strong>
             </p>
 
+
             <h3 style="color:#352c27;">
               Platba
             </h3>
@@ -1486,6 +1603,7 @@ export default async function handler(
               Platba prebieha na mieste
               v hotovosti alebo platobnou kartou.
             </p>
+
 
             <h3 style="color:#352c27;">
               Zrušenie rezervácie
@@ -1506,16 +1624,19 @@ export default async function handler(
               ďalším záujemcom.
             </p>
 
+
             <p>
               Ďakujeme za pochopenie
               a tešíme sa na vás! 👐🏻🏺
             </p>
+
 
             <p>
               <strong>
                 Tím Keramického klubu
               </strong>
             </p>
+
 
             <p style="
               color:#8a786b;
@@ -1533,6 +1654,12 @@ export default async function handler(
         );
 
 
+        /*
+         * -----------------------------------------------
+         * 12. ÚSPECH
+         * -----------------------------------------------
+         */
+
         return res.status(200).json({
 
           success:
@@ -1545,6 +1672,12 @@ export default async function handler(
 
       }
 
+
+      /*
+       * ===================================================
+       * NEZNÁMY TYP
+       * ===================================================
+       */
 
       return res.status(400).json({
 
@@ -1574,6 +1707,12 @@ export default async function handler(
   }
 
 
+  /*
+   * =======================================================
+   * OSTATNÉ HTTP METÓDY
+   * =======================================================
+   */
+
   return res.status(405).json({
 
     error:
@@ -1582,3 +1721,4 @@ export default async function handler(
   });
 
 }
+``
