@@ -49,6 +49,24 @@ const CLUB_END_TIMES = [
   "19:00"
 ];
 
+/* WORKSHOPY PRE DOSPELÝCH – ROK NA GEMERI */
+const WORKSHOPS = {
+  "2026-11-18": {
+    date: "18. 11. 2026",
+    title: "Modrotlač",
+    lecturer: "Mišena Juhász",
+    price: 15
+  },
+  "2026-11-19": {
+    date: "19. 11. 2026",
+    title: "Čaro lineckých koláčikov",
+    lecturer: "Anna Lachová",
+    price: 10
+  }
+};
+const WORKSHOP_CAPACITY = 10;
+
+
 
 /* =========================================================
    SUPABASE – NAČÍTANIE REZERVÁCIÍ
@@ -551,6 +569,12 @@ export default async function handler(
             item.type === "course"
         ).length;
 
+      const workshops = {};
+      for (const date of Object.keys(WORKSHOPS)) {
+        workshops[date] = reservations.filter(
+          item => item.type === "workshop" && item.date === date
+        ).length;
+      }
 
       return res.status(200).json({
 
@@ -567,7 +591,9 @@ export default async function handler(
               7 - courseReservations
             )
 
-        }
+        },
+
+        workshops
 
       });
 
@@ -1028,6 +1054,105 @@ export default async function handler(
 
         });
 
+      }
+
+
+      /*
+       * WORKSHOPY PRE DOSPELÝCH – verejné prihlásenie bez účtu
+       */
+      if (type === "workshop") {
+        const workshop = WORKSHOPS[date];
+
+        if (!workshop) {
+          return res.status(400).json({ error: "Vyberte platný workshop." });
+        }
+
+        if (getTodayBratislava() > date) {
+          return res.status(400).json({ error: "Tento workshop sa už uskutočnil." });
+        }
+
+        const reservations = await getReservations();
+        const count = reservations.filter(
+          item => item.type === "workshop" && item.date === date
+        ).length;
+
+        if (count >= WORKSHOP_CAPACITY) {
+          return res.status(400).json({ error: "Tento workshop je už plne obsadený." });
+        }
+
+        const place = count + 1;
+        const insertResponse = await fetch(
+          `${SUPABASE_URL}/rest/v1/reservations`,
+          {
+            method: "POST",
+            headers: {
+              apikey: SUPABASE_KEY,
+              Authorization: `Bearer ${SUPABASE_KEY}`,
+              "Content-Type": "application/json",
+              Prefer: "return=minimal"
+            },
+            body: JSON.stringify({
+              type: "workshop",
+              name,
+              phone,
+              email,
+              date,
+              start_time: null,
+              end_time: null,
+              course_place: null,
+              user_id: null
+            })
+          }
+        );
+
+        if (!insertResponse.ok) {
+          const errorText = await insertResponse.text();
+          console.error("Workshop insert error:", errorText);
+          return res.status(500).json({ error: "Prihlásenie na workshop sa nepodarilo uložiť." });
+        }
+
+        const safe = value => String(value).replace(/[&<>"]/g, char => ({
+          "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"
+        }[char]));
+
+        await sendEmail(
+          "renata.ksenicova@gos.sk",
+          `Nová rezervácia – ${workshop.title}`,
+          `<div style="font-family:Arial,sans-serif;line-height:1.6;color:#302923">
+            <h2>Nová rezervácia – Workshopy pre dospelých: Rok na Gemeri</h2>
+            <p><strong>Workshop:</strong> ${workshop.title}</p>
+            <p><strong>Dátum:</strong> ${workshop.date}</p>
+            <p><strong>Začiatok:</strong> 17:00</p>
+            <p><strong>Lektorka:</strong> ${workshop.lecturer}</p>
+            <p><strong>Meno:</strong> ${safe(name)}</p>
+            <p><strong>Telefón:</strong> ${safe(phone)}</p>
+            <p><strong>E-mail:</strong> ${safe(email)}</p>
+            <p><strong>Cena:</strong> ${workshop.price} €</p>
+            <p><strong>Obsadené miesto:</strong> ${place}/10</p>
+          </div>`
+        );
+
+        await sendEmail(
+          email,
+          `Potvrdenie rezervácie – ${workshop.title}`,
+          `<div style="font-family:Arial,sans-serif;max-width:650px;margin:0 auto;color:#302923;line-height:1.65">
+            <h2>Ďakujeme za vašu rezerváciu!</h2>
+            <p>Vaša rezervácia na workshop v rámci cyklu <strong>Rok na Gemeri</strong> bola prijatá.</p>
+            <div style="background:#f7eee7;padding:18px;border-radius:12px;margin:20px 0">
+              <p><strong>Workshop:</strong> ${workshop.title}</p>
+              <p><strong>Dátum:</strong> ${workshop.date}</p>
+              <p><strong>Začiatok:</strong> 17:00</p>
+              <p><strong>Cena:</strong> ${workshop.price} €</p>
+            </div>
+            <p>Tešíme sa na vás!</p>
+            <p style="font-size:13px;color:#8a786b">Ak potvrdzovací e-mail nevidíte, skontrolujte aj priečinok Spam alebo Nevyžiadaná pošta.</p>
+          </div>`
+        );
+
+        return res.status(200).json({
+          success: true,
+          message: "Vaša rezervácia na workshop bola úspešná."
+        });
       }
 
 
