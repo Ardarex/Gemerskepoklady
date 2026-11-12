@@ -1830,34 +1830,8 @@
 
 
 
-  <!-- WORKSHOPY PRE DOSPELÝCH – ROK NA GEMERI -->
-  <div class="section">
-    <div class="section-header" id="workshopHeader">
-      <span>Workshopy pre dospelých – Rok na Gemeri</span>
-      <span class="arrow" id="workshopArrow">▼</span>
-    </div>
-    <div class="section-content" id="workshopContent">
-      <p>Vyberte si workshop. Prihlásenie je možné bez vytvorenia účtu.</p>
-
-      <div class="course-info">
-        <div><strong>18. 11. 2026 – Modrotlač</strong></div>
-        <div>Lektorka: Mišena Juhász</div>
-        <div>Začiatok: 17:00</div>
-        <div><strong>Cena: 15 €</strong></div>
-        <div class="course-place"><span id="workshopAvailability20261118">Načítavam voľné miesta...</span></div>
-        <button type="button" class="course-button workshop-button" data-workshop-date="2026-11-18">Prihlásiť sa na workshop</button>
-      </div>
-
-      <div class="course-info">
-        <div><strong>19. 11. 2026 – Čaro lineckých koláčikov</strong></div>
-        <div>Lektorka: Anna Lachová</div>
-        <div>Začiatok: 17:00</div>
-        <div><strong>Cena: 10 €</strong></div>
-        <div class="course-place"><span id="workshopAvailability20261119">Načítavam voľné miesta...</span></div>
-        <button type="button" class="course-button workshop-button" data-workshop-date="2026-11-19">Prihlásiť sa na workshop</button>
-      </div>
-    </div>
-  </div>
+  <!-- DYNAMICKÉ SEKcie A PODUJATIA Z ADMINISTRÁCIE -->
+  <div id="dynamicEventsContainer"></div>
 
 
   <form id="reservationForm">
@@ -2235,7 +2209,8 @@
       available: 7
 
     },
-    workshops: {}
+    workshops: {},
+    events: []
 
   };
 
@@ -2250,6 +2225,8 @@
 
 
   let selectedType = "";
+
+  let selectedEventId = "";
 
   let selectedDate = "";
 
@@ -2461,10 +2438,8 @@
 
     document.getElementById("courseButton");
 
-  const workshopHeader = document.getElementById("workshopHeader");
-  const workshopContent = document.getElementById("workshopContent");
-  const workshopArrow = document.getElementById("workshopArrow");
-  const workshopButtons = document.querySelectorAll(".workshop-button");
+  const dynamicEventsContainer =
+    document.getElementById("dynamicEventsContainer");
 
 
 
@@ -2993,6 +2968,8 @@
 
 
       selectedType = "";
+
+      selectedEventId = "";
 
       selectedDate = "";
 
@@ -3660,7 +3637,7 @@
 
 
 
-      updateWorkshopAvailability(data.workshops || {});
+      renderDynamicEvents(data.events || []);
 
     } catch (error) {
 
@@ -3694,26 +3671,114 @@
 
 
 
-  function updateWorkshopAvailability(workshops) {
-    ["2026-11-18", "2026-11-19"].forEach(date => {
-      const reserved = Number(workshops[date] || 0);
-      const available = Math.max(0, 10 - reserved);
-      const suffix = date.replaceAll("-", "");
-      const label = document.getElementById("workshopAvailability" + suffix);
-      const button = document.querySelector(
-        `.workshop-button[data-workshop-date="${date}"]`
-      );
-      const past = getTodayBratislava() > date;
+  function renderDynamicEvents(events) {
+    if (!dynamicEventsContainer) return;
+    dynamicEventsContainer.innerHTML = "";
 
-      if (label) label.textContent = `${available}/10 voľných miest`;
-      if (button) {
-        button.disabled = past || available <= 0;
-        button.textContent = past
-          ? "Workshop sa už uskutočnil"
-          : available <= 0
-            ? "Workshop je plne obsadený"
-            : "Prihlásiť sa na workshop";
-      }
+    if (!Array.isArray(events) || events.length === 0) return;
+
+    const grouped = new Map();
+    events.forEach(slot => {
+      const sectionName = slot.section_title || "Ďalšie podujatia";
+      if (!grouped.has(sectionName)) grouped.set(sectionName, []);
+      grouped.get(sectionName).push(slot);
+    });
+
+    const formatDate = value => {
+      const parts = String(value || "").slice(0, 10).split("-");
+      if (parts.length !== 3) return value || "";
+      return `${Number(parts[2])}. ${Number(parts[1])}. ${parts[0]}`;
+    };
+
+    grouped.forEach((slots, sectionName) => {
+      const section = document.createElement("div");
+      section.className = "section";
+
+      const header = document.createElement("div");
+      header.className = "section-header";
+      const heading = document.createElement("span");
+      heading.textContent = sectionName;
+      const arrow = document.createElement("span");
+      arrow.className = "arrow";
+      arrow.textContent = "▼";
+      header.append(heading, arrow);
+
+      const content = document.createElement("div");
+      content.className = "section-content";
+      const intro = document.createElement("p");
+      intro.textContent = "Vyberte si podujatie a voľný termín. Prihlásenie je možné bez vytvorenia účtu.";
+      content.appendChild(intro);
+
+      slots.forEach(slot => {
+        const card = document.createElement("div");
+        card.className = "course-info";
+
+        const title = document.createElement("div");
+        const titleStrong = document.createElement("strong");
+        titleStrong.textContent = slot.title || "Podujatie";
+        title.appendChild(titleStrong);
+        card.appendChild(title);
+
+        if (slot.instructor) {
+          const instructor = document.createElement("div");
+          instructor.textContent = `Lektor/ka: ${slot.instructor}`;
+          card.appendChild(instructor);
+        }
+
+        const time = document.createElement("div");
+        const start = String(slot.start_time || "").slice(0, 5);
+        const end = slot.end_time ? String(slot.end_time).slice(0, 5) : "";
+        time.textContent = `Termín: ${formatDate(slot.event_date)} · ${start}${end ? " – " + end : ""}`;
+        card.appendChild(time);
+
+        const price = document.createElement("div");
+        price.innerHTML = "<strong>Cena:</strong> ";
+        price.appendChild(document.createTextNode(`${Number(slot.price || 0).toLocaleString("sk-SK")} €`));
+        card.appendChild(price);
+
+        const capacity = document.createElement("div");
+        capacity.className = "course-place";
+        const available = Math.max(0, Number(slot.available ?? 0));
+        capacity.textContent = `${available}/${Number(slot.capacity || 0)} voľných miest`;
+        card.appendChild(capacity);
+
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "course-button";
+        button.textContent = available > 0 ? "Vybrať tento termín" : "Termín je plne obsadený";
+        button.disabled = available <= 0 || getTodayBratislava() > String(slot.event_date).slice(0, 10);
+        if (getTodayBratislava() > String(slot.event_date).slice(0, 10)) {
+          button.textContent = "Termín sa už uskutočnil";
+        }
+
+        button.addEventListener("click", () => {
+          selectedType = "workshop";
+          selectedEventId = slot.id;
+          selectedDate = String(slot.event_date).slice(0, 10);
+          selectedStart = start;
+          selectedEnd = end;
+
+          typeInput.value = "workshop";
+          dateInput.value = selectedDate;
+          startInput.value = selectedStart;
+          endInput.value = selectedEnd;
+          formTitle.textContent = `Rezervácia – ${slot.title || "Podujatie"}`;
+          reservationForm.classList.add("show");
+          reservationForm.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+
+        card.appendChild(button);
+        content.appendChild(card);
+      });
+
+      header.addEventListener("click", () => {
+        const isOpen = content.classList.contains("show");
+        content.classList.toggle("show");
+        arrow.textContent = isOpen ? "▼" : "▲";
+      });
+
+      section.append(header, content);
+      dynamicEventsContainer.appendChild(section);
     });
   }
 
@@ -4652,34 +4717,6 @@
 
 
 
-  workshopHeader.addEventListener("click", function() {
-    const open = workshopContent.classList.contains("show");
-    workshopContent.classList.toggle("show");
-    workshopArrow.textContent = open ? "▼" : "▲";
-  });
-
-  workshopButtons.forEach(button => {
-    button.addEventListener("click", function() {
-      const date = button.dataset.workshopDate;
-      selectedType = "workshop";
-      selectedDate = date;
-      selectedStart = "";
-      selectedEnd = "";
-      typeInput.value = "workshop";
-      dateInput.value = date;
-      startInput.value = "";
-      endInput.value = "";
-
-      formTitle.textContent = date === "2026-11-18"
-        ? "Prihlásenie – Modrotlač"
-        : "Prihlásenie – Čaro lineckých koláčikov";
-
-      reservationForm.classList.add("show");
-      reservationForm.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
-  });
-
-
   reservationForm.addEventListener(
 
     "submit",
@@ -4921,12 +4958,13 @@
 
 
       if (selectedType === "workshop") {
-        if (!["2026-11-18", "2026-11-19"].includes(selectedDate)) {
-          message.textContent = "Vyberte platný workshop.";
+        const selectedEvent = (availability.events || []).find(item => item.id === selectedEventId);
+        if (!selectedEvent || !selectedDate || !selectedStart) {
+          message.textContent = "Vyberte platný termín podujatia.";
           return;
         }
-        if (getTodayBratislava() > selectedDate) {
-          message.textContent = "Tento workshop sa už uskutočnil.";
+        if (Number(selectedEvent.available || 0) <= 0 || getTodayBratislava() > selectedDate) {
+          message.textContent = "Tento termín už nie je dostupný.";
           await loadAvailability();
           return;
         }
@@ -5165,7 +5203,11 @@
 
                 end_time:
 
-                  selectedEnd
+                  selectedEnd,
+
+                event_id:
+
+                  selectedEventId || null
 
 
 
@@ -5449,5 +5491,3 @@
 </body>
 
 </html>
-
-
