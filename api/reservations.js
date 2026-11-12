@@ -110,6 +110,49 @@ async function getReservations() {
 
 
 /* =========================================================
+   AKTÍVNE PODUJATIA Z ADMINISTRÁCIE
+   ========================================================= */
+
+async function getPublicEvents() {
+  const headers = {
+    apikey: SUPABASE_KEY,
+    Authorization: `Bearer ${SUPABASE_KEY}`
+  };
+
+  const [eventsResponse, sectionsResponse] = await Promise.all([
+    fetch(
+      `${SUPABASE_URL}/rest/v1/events?select=id,event_group_id,section_title,title,instructor,event_date,start_time,end_time,price,capacity,active&active=eq.true&order=event_date.asc,start_time.asc`,
+      { headers }
+    ),
+    fetch(
+      `${SUPABASE_URL}/rest/v1/event_sections?select=name&active=eq.true`,
+      { headers }
+    )
+  ]);
+
+  if (!eventsResponse.ok) {
+    const text = await eventsResponse.text();
+    console.error("Supabase events error:", text);
+    throw new Error("Nepodarilo sa načítať podujatia.");
+  }
+  if (!sectionsResponse.ok) {
+    const text = await sectionsResponse.text();
+    console.error("Supabase event sections error:", text);
+    throw new Error("Nepodarilo sa načítať sekcie podujatí.");
+  }
+
+  const [events, sections] = await Promise.all([
+    eventsResponse.json(),
+    sectionsResponse.json()
+  ]);
+  const activeSections = new Set(sections.map(section => section.name));
+
+  // Verejnosť vidí iba podujatia patriace do aktívnych sekcií.
+  return events.filter(event => activeSections.has(event.section_title));
+}
+
+
+/* =========================================================
    ROZPOZNANIE REZERVÁCIE KERAMICKÉHO KLUBU
    ========================================================= */
 
@@ -459,8 +502,10 @@ export default async function handler(
 
     try {
 
-      const reservations =
-        await getReservations();
+      const [reservations, publicEvents] = await Promise.all([
+        getReservations(),
+        getPublicEvents()
+      ]);
 
 
       const club = {};
@@ -576,6 +621,17 @@ export default async function handler(
         ).length;
       }
 
+      const events = publicEvents.map(event => {
+        const reserved = reservations.filter(
+          item => item.event_id === event.id
+        ).length;
+        return {
+          ...event,
+          reserved,
+          available: Math.max(0, Number(event.capacity || 0) - reserved)
+        };
+      });
+
       return res.status(200).json({
 
         club,
@@ -593,7 +649,9 @@ export default async function handler(
 
         },
 
-        workshops
+        workshops,
+
+        events
 
       });
 
@@ -639,7 +697,9 @@ export default async function handler(
 
         start_time,
 
-        end_time
+        end_time,
+
+        event_id
 
       } = req.body || {};
 
@@ -1054,6 +1114,136 @@ export default async function handler(
 
         });
 
+      }
+
+
+      /*
+       * DYNAMICKÉ PODUJATIA VYTVORENÉ V ADMINISTRÁCII.
+       * Verejné prihlásenie bez účtu; cenu, termín a kapacitu
+       * vždy načítavame zo Supabase, nie z údajov prehliadača.
+       */
+      if (type === "workshop" && event_id) {
+        const eventResponse = await fetch(
+          `${SUPABASE_URL}/rest/v1/events?select=id,section_title,title,instructor,event_date,start_time,end_time,price,capacity,active&id=eq.${encodeURIComponent(event_id)}&active=eq.true&limit=1`,
+          {
+            headers: {
+              apikey: SUPABASE_KEY,
+              Authorization: `Bearer ${SUPABASE_KEY}`
+            }
+          }
+        );
+
+        if (!eventResponse.ok) {
+          console.error("Event lookup error:", await eventResponse.text());
+          return res.status(500).json({ error: "Podujatie sa nepodarilo overiť." });
+        }
+
+        const eventRows = await eventResponse.json();
+        const event = eventRows[0];
+
+        if (!event) {
+          return res.status(400).json({ error: "Vybraný termín už nie je dostupný." });
+        }
+
+        const eventDate = String(event.event_date).slice(0, 10);
+        const eventStart = String(event.start_time).slice(0, 5);
+        const eventEnd = event.end_time ? String(event.end_time).slice(0, 5) : null;
+
+        if (getTodayBratislava() > eventDate) {
+          return res.status(400).json({ error: "Tento termín sa už uskutočnil." });
+        }
+
+        const reservations = await getReservations();
+        const count = reservations.filter(item => item.event_id === event.id).length;
+        const capacity = Number(event.capacity);
+
+        if (count >= capacity) {
+          return res.status(400).json({ error: "Tento termín je už plne obsadený." });
+        }
+
+        const place = count + 1;
+        const insertResponse = await fetch(
+          `${SUPABASE_URL}/rest/v1/reservations`,
+          {
+            method: "POST",
+            headers: {
+              apikey: SUPABASE_KEY,
+              Authorization: `Bearer ${SUPABASE_KEY}`,
+              "Content-Type": "application/json",
+              Prefer: "return=minimal"
+            },
+            body: JSON.stringify({
+              type: "workshop",
+              event_id: event.id,
+              name,
+              phone,
+              email,
+              date: eventDate,
+              start_time: eventStart,
+              end_time: eventEnd,
+              course_place: null,
+              user_id: null
+            })
+          }
+        );
+
+        if (!insertResponse.ok) {
+          const errorText = await insertResponse.text();
+          console.error("Dynamic event reservation insert error:", errorText);
+          return res.status(500).json({ error: "Rezerváciu sa nepodarilo uložiť." });
+        }
+
+        const safe = value => String(value ?? "").replace(/[&<>"']/g, char => ({
+          "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+        }[char]));
+        const eventDateSk = eventDate.split("-").reverse().join(". ");
+        const timeLabel = eventEnd ? `${eventStart} – ${eventEnd}` : eventStart;
+        const sectionName = safe(event.section_title || "Podujatie");
+        const eventTitle = safe(event.title);
+        const instructor = safe(event.instructor || "Neuvedený");
+        const price = Number(event.price).toLocaleString("sk-SK");
+
+        await sendEmail(
+          "renata.ksenicova@gos.sk",
+          `Nová rezervácia – ${event.title}`,
+          `<div style="font-family:Arial,sans-serif;line-height:1.6;color:#302923">
+            <h2>Nová rezervácia – ${eventTitle}</h2>
+            <p><strong>Sekcia:</strong> ${sectionName}</p>
+            <p><strong>Podujatie:</strong> ${eventTitle}</p>
+            <p><strong>Dátum:</strong> ${eventDateSk}</p>
+            <p><strong>Čas:</strong> ${timeLabel}</p>
+            <p><strong>Lektor/ka:</strong> ${instructor}</p>
+            <p><strong>Meno:</strong> ${safe(name)}</p>
+            <p><strong>Telefón:</strong> ${safe(phone)}</p>
+            <p><strong>E-mail:</strong> ${safe(email)}</p>
+            <p><strong>Cena:</strong> ${price} €</p>
+            <p><strong>Obsadené miesto:</strong> ${place}/${capacity}</p>
+          </div>`
+        );
+
+        await sendEmail(
+          email,
+          `Potvrdenie rezervácie – ${event.title}`,
+          `<div style="font-family:Arial,sans-serif;max-width:650px;margin:0 auto;color:#302923;line-height:1.65">
+            <h2>Ďakujeme za vašu rezerváciu!</h2>
+            <p>Vaša rezervácia bola prijatá.</p>
+            <div style="background:#f7eee7;padding:18px;border-radius:12px;margin:20px 0">
+              <p><strong>Sekcia:</strong> ${sectionName}</p>
+              <p><strong>Podujatie:</strong> ${eventTitle}</p>
+              <p><strong>Dátum:</strong> ${eventDateSk}</p>
+              <p><strong>Čas:</strong> ${timeLabel}</p>
+              <p><strong>Lektor/ka:</strong> ${instructor}</p>
+              <p><strong>Cena:</strong> ${price} €</p>
+            </div>
+            <p>Tešíme sa na vás!</p>
+            <p style="font-size:13px;color:#8a786b">Ak potvrdzovací e-mail nevidíte, skontrolujte aj priečinok Spam alebo Nevyžiadaná pošta.</p>
+          </div>`
+        );
+
+        return res.status(200).json({
+          success: true,
+          message: "Vaša rezervácia bola úspešná."
+        });
       }
 
 
